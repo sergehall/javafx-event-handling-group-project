@@ -1,0 +1,23 @@
+{
+  "name": "javafx-event-handling-group-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run start:all",
+    "start:all": "npm run start:infra && concurrently --kill-others-on-fail --names api,frontend,desktop --prefix-colors blue,magenta,green \"npm run start:api\" \"npm run start:frontend\" \"npm run start:desktop\"",
+    "start:web": "npm run start:infra && concurrently --kill-others-on-fail --names api,frontend --prefix-colors blue,magenta \"npm run start:api\" \"npm run start:frontend\"",
+    "start:infra": "./start-infrastructure.sh",
+    "stop:infra": "./stop-infrastructure.sh",
+    "start:frontend": "npm --prefix frontend run dev",
+    "start:api": "./mvnw -pl group-api spring-boot:run",
+    "start:desktop": "./mvnw -pl desktop-app javafx:run",
+    "verify": "./mvnw clean verify && npm --prefix frontend run verify && docker compose config"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "packageManager": "npm@11.13.0",
+  "devDependencies": {
+    "concurrently": "10.0.3"
+  }
+}
