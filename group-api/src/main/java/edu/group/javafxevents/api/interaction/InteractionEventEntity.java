@@ -51,11 +51,7 @@ class InteractionEventEntity {
 
   static InteractionEventEntity from(CreateInteractionRequest request, Instant createdAt) {
     return new InteractionEventEntity(
-        request.type(),
-        request.message(),
-        request.xCoordinate(),
-        request.yCoordinate(),
-        createdAt);
+        request.type(), request.message(), request.xCoordinate(), request.yCoordinate(), createdAt);
   }
 
   Long getId() {

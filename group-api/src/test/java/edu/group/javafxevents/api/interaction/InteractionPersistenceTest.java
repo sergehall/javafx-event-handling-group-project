@@ -16,7 +16,8 @@ class InteractionPersistenceTest {
 
   @Test
   void persistsInteractionThroughFlywayManagedSchema() {
-    var request = new CreateInteractionRequest(InteractionType.GREETING, "  Hello team  ", null, null);
+    var request =
+        new CreateInteractionRequest(InteractionType.GREETING, "  Hello team  ", null, null);
     var event = InteractionEventEntity.from(request, Instant.parse("2026-07-18T12:00:00Z"));
 
     var saved = repository.saveAndFlush(event);
