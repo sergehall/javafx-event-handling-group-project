@@ -49,11 +49,16 @@ The application demonstrates:
 
 ## Run PostgreSQL and the API
 
-Start the database:
+Start the required local infrastructure from the project root:
 
 ```bash
-docker compose up -d postgres
+./start-infrastructure.sh
 ```
+
+The script validates the Docker environment, starts PostgreSQL through
+`compose.yaml`, waits for its health check, and prints the container status.
+It uses the safe defaults from the Compose file or optional values from a local
+ignored `.env` file.
 
 Start the API in another terminal:
 
