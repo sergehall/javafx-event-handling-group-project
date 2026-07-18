@@ -47,7 +47,7 @@ committed.
 
 The root `package.json` provides one command interface for the complete project:
 
-| Command | Starts or stops |
+| Command | Purpose |
 | --- | --- |
 | `npm start` | PostgreSQL, Spring Boot API, Next.js, and JavaFX |
 | `npm run start:web` | PostgreSQL, Spring Boot API, and Next.js |
@@ -56,6 +56,9 @@ The root `package.json` provides one command interface for the complete project:
 | `npm run start:frontend` | Next.js, then opens it in the default browser |
 | `npm run start:api` | Spring Boot API only |
 | `npm run start:desktop` | Standalone JavaFX application only |
+| `npm run lint` | Checkstyle for Java and ESLint for the frontend |
+| `npm run format` | Format Java with Spotless and the frontend with Prettier |
+| `npm run format:check` | Check formatting without changing files |
 | `npm run verify` | Maven, frontend, and Compose quality gates |
 
 Press `Ctrl+C` to stop the foreground processes started by `npm start` or
@@ -169,9 +172,18 @@ curl 'http://127.0.0.1:8081/api/v1/interactions?limit=20'
 
 ## Verification
 
+Before committing, format the code and run all quality gates from the project
+root:
+
 ```bash
+npm run format
 npm run verify
 ```
+
+Maven runs Checkstyle and Spotless for both Java modules. The frontend runs
+ESLint with the Next.js TypeScript rules and Prettier, followed by type checks,
+component tests, and a production build. Use `npm run lint` or
+`npm run format:check` when you need a faster focused check.
 
 ## Security Rules
 

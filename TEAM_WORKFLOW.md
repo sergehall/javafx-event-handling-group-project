@@ -29,7 +29,8 @@ Ownership is temporary. Important code must be understood by both contributors.
 
 - JavaFX behavior works manually.
 - Automated tests pass.
-- Frontend lint, typecheck, component tests, and production build pass.
+- Java and frontend lint and formatting checks pass.
+- Frontend typecheck, component tests, and production build pass.
 - No secret or `.env` file is tracked.
 - The database schema is reproducible through Flyway.
 - The pull request explains how the change was verified.
