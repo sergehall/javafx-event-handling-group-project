@@ -53,7 +53,7 @@ The root `package.json` provides one command interface for the complete project:
 | `npm run start:web` | PostgreSQL, Spring Boot API, and Next.js |
 | `npm run start:infra` | PostgreSQL in Docker Desktop |
 | `npm run stop:infra` | PostgreSQL, preserving its container and volume |
-| `npm run start:frontend` | Next.js only |
+| `npm run start:frontend` | Next.js, then opens it in the default browser |
 | `npm run start:api` | Spring Boot API only |
 | `npm run start:desktop` | Standalone JavaFX application only |
 | `npm run verify` | Maven, frontend, and Compose quality gates |
@@ -61,6 +61,9 @@ The root `package.json` provides one command interface for the complete project:
 Press `Ctrl+C` to stop the foreground processes started by `npm start` or
 `npm run start:web`. PostgreSQL intentionally keeps running; stop it separately
 with `npm run stop:infra` when required.
+
+Commands that include the frontend wait for `http://127.0.0.1:3000` to become
+ready and then open it in the default browser automatically.
 
 ## Run the JavaFX Assignment
 

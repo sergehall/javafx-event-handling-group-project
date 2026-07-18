@@ -8,7 +8,9 @@
     "start:web": "npm run start:infra && concurrently --kill-others-on-fail --names api,frontend --prefix-colors blue,magenta \"npm run start:api\" \"npm run start:frontend\"",
     "start:infra": "./start-infrastructure.sh",
     "stop:infra": "./stop-infrastructure.sh",
-    "start:frontend": "npm --prefix frontend run dev",
+    "start:frontend": "concurrently --kill-others-on-fail --names frontend,browser --prefix-colors magenta,cyan \"npm run start:frontend:server\" \"npm run open:frontend\"",
+    "start:frontend:server": "npm --prefix frontend run dev",
+    "open:frontend": "node scripts/open-frontend.mjs",
     "start:api": "./mvnw -pl group-api spring-boot:run",
     "start:desktop": "./mvnw -pl desktop-app javafx:run",
     "verify": "./mvnw clean verify && npm --prefix frontend run verify && docker compose config"
