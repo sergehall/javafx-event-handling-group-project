@@ -19,9 +19,7 @@ describe("interaction proxy route", () => {
     const fetchMock = vi.fn<typeof fetch>();
     vi.stubGlobal("fetch", fetchMock);
 
-    const response = await GET(
-      new Request("http://localhost/api/group/interactions?limit=101"),
-    );
+    const response = await GET(new Request("http://localhost/api/group/interactions?limit=101"));
 
     expect(response.status).toBe(400);
     expect(fetchMock).not.toHaveBeenCalled();

@@ -25,9 +25,7 @@ async function requireSuccessfulResponse(response: Response): Promise<unknown> {
 
   const parsedMessage = apiMessageSchema.safeParse(body);
   throw new Error(
-    parsedMessage.success
-      ? parsedMessage.data.message
-      : "The API request was not successful.",
+    parsedMessage.success ? parsedMessage.data.message : "The API request was not successful.",
   );
 }
 
@@ -36,25 +34,19 @@ export async function getApiHealth(): Promise<ApiHealth> {
   return apiHealthSchema.parse(await requireSuccessfulResponse(response));
 }
 
-export async function getRecentInteractions(
-  limit = 10,
-): Promise<InteractionResponse[]> {
+export async function getRecentInteractions(limit = 10): Promise<InteractionResponse[]> {
   const response = await fetch(`/api/group/interactions?limit=${limit}`, {
     cache: "no-store",
   });
   return interactionListSchema.parse(await requireSuccessfulResponse(response));
 }
 
-export async function createInteraction(
-  payload: InteractionPayload,
-): Promise<InteractionResponse> {
+export async function createInteraction(payload: InteractionPayload): Promise<InteractionResponse> {
   const validatedPayload = interactionPayloadSchema.parse(payload);
   const response = await fetch("/api/group/interactions", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(validatedPayload),
   });
-  return interactionResponseSchema.parse(
-    await requireSuccessfulResponse(response),
-  );
+  return interactionResponseSchema.parse(await requireSuccessfulResponse(response));
 }

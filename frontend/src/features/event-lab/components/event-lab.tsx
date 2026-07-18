@@ -51,9 +51,7 @@ export function EventLab() {
   const [status, setStatus] = useState(DEFAULT_STATUS);
   const [clickCount, setClickCount] = useState(0);
   const [marker, setMarker] = useState(INITIAL_MARKER);
-  const [apiStatus, setApiStatus] = useState<
-    "checking" | "online" | "offline"
-  >("checking");
+  const [apiStatus, setApiStatus] = useState<"checking" | "online" | "offline">("checking");
   const [history, setHistory] = useState<HistoryState>({ status: "loading" });
   const [syncState, setSyncState] = useState<SyncState>({
     status: "idle",
@@ -62,20 +60,14 @@ export function EventLab() {
 
   const loadHistory = useCallback(async () => {
     try {
-      const [health, interactions] = await Promise.all([
-        getApiHealth(),
-        getRecentInteractions(),
-      ]);
+      const [health, interactions] = await Promise.all([getApiHealth(), getRecentInteractions()]);
       setApiStatus(health.status.toUpperCase() === "UP" ? "online" : "offline");
       setHistory({ status: "ready", interactions });
     } catch (error) {
       setApiStatus("offline");
       setHistory({
         status: "error",
-        message:
-          error instanceof Error
-            ? error.message
-            : "Interaction history is unavailable.",
+        message: error instanceof Error ? error.message : "Interaction history is unavailable.",
       });
     }
   }, []);
@@ -88,9 +80,7 @@ export function EventLab() {
         if (!isCurrent) {
           return;
         }
-        setApiStatus(
-          health.status.toUpperCase() === "UP" ? "online" : "offline",
-        );
+        setApiStatus(health.status.toUpperCase() === "UP" ? "online" : "offline");
         setHistory({ status: "ready", interactions });
       })
       .catch((error: unknown) => {
@@ -100,10 +90,7 @@ export function EventLab() {
         setApiStatus("offline");
         setHistory({
           status: "error",
-          message:
-            error instanceof Error
-              ? error.message
-              : "Interaction history is unavailable.",
+          message: error instanceof Error ? error.message : "Interaction history is unavailable.",
         });
       });
 
@@ -117,25 +104,22 @@ export function EventLab() {
     void loadHistory();
   }
 
-  const persistInteraction = useCallback(
-    async (payload: InteractionPayload) => {
-      setSyncState({ status: "syncing", message: "Sending event to the API…" });
-      try {
-        await createInteraction(payload);
-        const interactions = await getRecentInteractions();
-        setApiStatus("online");
-        setHistory({ status: "ready", interactions });
-        setSyncState({ status: "synced", message: "Event saved by the API." });
-      } catch {
-        setApiStatus("offline");
-        setSyncState({
-          status: "offline",
-          message: "Local event completed, but the API could not save it.",
-        });
-      }
-    },
-    [],
-  );
+  const persistInteraction = useCallback(async (payload: InteractionPayload) => {
+    setSyncState({ status: "syncing", message: "Sending event to the API…" });
+    try {
+      await createInteraction(payload);
+      const interactions = await getRecentInteractions();
+      setApiStatus("online");
+      setHistory({ status: "ready", interactions });
+      setSyncState({ status: "synced", message: "Event saved by the API." });
+    } catch {
+      setApiStatus("offline");
+      setSyncState({
+        status: "offline",
+        message: "Local event completed, but the API could not save it.",
+      });
+    }
+  }, []);
 
   function handleGreeting(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -171,9 +155,7 @@ export function EventLab() {
       xPercent: bounds.width === 0 ? 0 : (safeX / bounds.width) * 100,
       yPercent: bounds.height === 0 ? 0 : (safeY / bounds.height) * 100,
     });
-    setStatus(
-      `Canvas click #${nextCount} at (${Math.round(safeX)}, ${Math.round(safeY)})`,
-    );
+    setStatus(`Canvas click #${nextCount} at (${Math.round(safeX)}, ${Math.round(safeY)})`);
     void persistInteraction({
       type: "CANVAS_CLICK",
       xCoordinate: safeX,
@@ -272,11 +254,7 @@ export function EventLab() {
               <p className="section-heading__label">Spring Boot API</p>
               <h2 id="history-title">Recent events</h2>
             </div>
-            <button
-              type="button"
-              className="button-text"
-              onClick={handleHistoryRefresh}
-            >
+            <button type="button" className="button-text" onClick={handleHistoryRefresh}>
               Refresh
             </button>
           </div>
@@ -317,8 +295,8 @@ export function EventLab() {
           <p className="section-heading__label">Desktop assignment</p>
           <h2 id="launch-title">Launch JavaFX separately</h2>
           <p>
-            The browser lab is optional. The graded JavaFX/FXML application remains
-            standalone and starts without this frontend or the API.
+            The browser lab is optional. The graded JavaFX/FXML application remains standalone and
+            starts without this frontend or the API.
           </p>
           <code>./mvnw -pl desktop-app javafx:run</code>
         </section>

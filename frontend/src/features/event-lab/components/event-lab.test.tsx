@@ -60,9 +60,7 @@ describe("EventLab", () => {
     await user.click(screen.getByRole("button", { name: "Say hello" }));
 
     expect(screen.getByText("Hello, Ada!")).toBeVisible();
-    expect(
-      await screen.findByText("Event saved by the API."),
-    ).toBeVisible();
+    expect(await screen.findByText("Event saved by the API.")).toBeVisible();
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/group/interactions",
       expect.objectContaining({
@@ -95,9 +93,7 @@ describe("EventLab", () => {
     expect(screen.getByText("Canvas click #1 at (160, 120)")).toBeVisible();
     expect(playground).toHaveStyle("--marker-x: 50%; --marker-y: 50%");
     expect(
-      await screen.findByText(
-        "Local event completed, but the API could not save it.",
-      ),
+      await screen.findByText("Local event completed, but the API could not save it."),
     ).toBeVisible();
   });
 
@@ -109,9 +105,7 @@ describe("EventLab", () => {
     await user.click(screen.getByRole("button", { name: "Say hello" }));
 
     expect(screen.getByLabelText("Name")).toBeInvalid();
-    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription(
-      "Please enter your name.",
-    );
+    expect(screen.getByLabelText("Name")).toHaveAccessibleDescription("Please enter your name.");
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   });
 });

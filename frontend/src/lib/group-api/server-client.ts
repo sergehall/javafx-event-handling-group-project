@@ -15,15 +15,10 @@ const baseUrlSchema = z
   });
 
 function getGroupApiBaseUrl(): URL {
-  return baseUrlSchema.parse(
-    process.env.GROUP_API_BASE_URL ?? DEFAULT_GROUP_API_URL,
-  );
+  return baseUrlSchema.parse(process.env.GROUP_API_BASE_URL ?? DEFAULT_GROUP_API_URL);
 }
 
-export async function fetchGroupApi(
-  path: `/${string}`,
-  init: RequestInit = {},
-): Promise<Response> {
+export async function fetchGroupApi(path: `/${string}`, init: RequestInit = {}): Promise<Response> {
   const baseUrl = getGroupApiBaseUrl();
   const url = new URL(path, `${baseUrl.toString().replace(/\/$/, "")}/`);
 

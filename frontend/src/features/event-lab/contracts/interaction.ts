@@ -1,10 +1,6 @@
 import { z } from "zod";
 
-export const interactionTypeSchema = z.enum([
-  "GREETING",
-  "CANVAS_CLICK",
-  "RESET",
-]);
+export const interactionTypeSchema = z.enum(["GREETING", "CANVAS_CLICK", "RESET"]);
 
 const greetingPayloadSchema = z
   .object({

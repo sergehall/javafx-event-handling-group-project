@@ -30,16 +30,12 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetchGroupApi(
-      `/api/v1/interactions?limit=${parsedLimit.data}`,
-    );
+    const response = await fetchGroupApi(`/api/v1/interactions?limit=${parsedLimit.data}`);
     if (!response.ok) {
       return errorResponse("The group API rejected the history request.", 502);
     }
 
-    const interactions = interactionListSchema.parse(
-      await readUpstreamJson(response),
-    );
+    const interactions = interactionListSchema.parse(await readUpstreamJson(response));
     return NextResponse.json(interactions);
   } catch {
     return errorResponse("The group API is unavailable.", 502);
@@ -84,9 +80,7 @@ export async function POST(request: Request) {
       return errorResponse("The group API rejected the interaction.", 502);
     }
 
-    const interaction = interactionResponseSchema.parse(
-      await readUpstreamJson(response),
-    );
+    const interaction = interactionResponseSchema.parse(await readUpstreamJson(response));
     return NextResponse.json(interaction, { status: 201 });
   } catch {
     return errorResponse("The group API is unavailable.", 502);
