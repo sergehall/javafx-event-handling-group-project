@@ -1,0 +1,23 @@
+name: javafx-event-handling-group
+
+services:
+  postgres:
+    image: postgres:17.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-javafx_group}
+      POSTGRES_USER: ${POSTGRES_USER:-javafx_group}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-local-javafx-only}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - javafx_group_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-javafx_group} -d ${POSTGRES_DB:-javafx_group}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  javafx_group_postgres:

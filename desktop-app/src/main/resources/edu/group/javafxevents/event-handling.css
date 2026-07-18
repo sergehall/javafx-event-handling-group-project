@@ -1,0 +1,84 @@
+.root {
+    -fx-background-color: #f7f3eb;
+    -fx-font-family: "Avenir Next", "Segoe UI", sans-serif;
+    -fx-font-size: 14px;
+}
+
+.header-panel {
+    -fx-background-color: #163d32;
+}
+
+.title-label {
+    -fx-font-size: 24px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #fffdf8;
+}
+
+.subtitle-label {
+    -fx-text-fill: #cde0d8;
+}
+
+.message-label {
+    -fx-font-size: 16px;
+    -fx-font-weight: 700;
+    -fx-text-fill: #163d32;
+}
+
+.playground {
+    -fx-background-color: #fffdf8;
+    -fx-background-radius: 14px;
+    -fx-border-color: #c7c0b4;
+    -fx-border-radius: 14px;
+    -fx-cursor: crosshair;
+}
+
+.anchor-shape {
+    -fx-fill: #f6a44c;
+    -fx-stroke: #8d4f10;
+    -fx-stroke-width: 2px;
+}
+
+.target-shape {
+    -fx-fill: #d8ebe4;
+    -fx-stroke: #2a6f5d;
+    -fx-stroke-width: 3px;
+}
+
+.marker-shape {
+    -fx-fill: #d94c4c;
+    -fx-stroke: #7f2424;
+    -fx-stroke-width: 2px;
+}
+
+.status-label {
+    -fx-text-fill: #5c625f;
+}
+
+.footer-panel {
+    -fx-background-color: #eee8dc;
+}
+
+.button {
+    -fx-background-color: #163d32;
+    -fx-background-radius: 8px;
+    -fx-cursor: hand;
+    -fx-font-weight: 700;
+    -fx-padding: 8px 14px;
+    -fx-text-fill: #fffdf8;
+}
+
+.button:hover {
+    -fx-background-color: #2a6f5d;
+}
+
+.text-field {
+    -fx-background-radius: 8px;
+    -fx-border-color: #a9a196;
+    -fx-border-radius: 8px;
+    -fx-padding: 8px 10px;
+}
+
+.text-field:focused {
+    -fx-border-color: #2a6f5d;
+    -fx-border-width: 2px;
+}

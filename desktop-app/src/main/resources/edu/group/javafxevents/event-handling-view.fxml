@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.shape.Ellipse?>
+<?import javafx.scene.shape.Rectangle?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="edu.group.javafxevents.EventHandlingController"
+            prefHeight="520.0"
+            prefWidth="780.0">
+    <top>
+        <VBox spacing="6.0" styleClass="header-panel">
+            <padding>
+                <Insets bottom="16.0" left="20.0" right="20.0" top="18.0" />
+            </padding>
+            <Label styleClass="title-label" text="JavaFX Event Handling Lab" />
+            <Label styleClass="subtitle-label" text="Button, keyboard, mouse, resize, reset, and exit events in one small application." />
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="14.0">
+            <padding>
+                <Insets bottom="14.0" left="20.0" right="20.0" top="14.0" />
+            </padding>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+                <Label labelFor="$nameField" text="Name:" />
+                <TextField fx:id="nameField"
+                           HBox.hgrow="ALWAYS"
+                           onAction="#handleGreeting"
+                           promptText="Type a name and press Enter" />
+                <Button defaultButton="true" onAction="#handleGreeting" text="Say hello" />
+            </HBox>
+            <Label fx:id="greetingLabel" styleClass="message-label" wrapText="true" />
+            <Pane fx:id="playground"
+                  minHeight="250.0"
+                  onMouseClicked="#handlePlaygroundClick"
+                  prefHeight="300.0"
+                  styleClass="playground"
+                  VBox.vgrow="ALWAYS">
+                <Rectangle fx:id="anchorRectangle"
+                           arcHeight="16.0"
+                           arcWidth="16.0"
+                           height="52.0"
+                           styleClass="anchor-shape"
+                           width="76.0" />
+                <Ellipse fx:id="centerEllipse"
+                         radiusX="66.0"
+                         radiusY="38.0"
+                         styleClass="target-shape" />
+                <Circle fx:id="marker"
+                        centerX="70.0"
+                        centerY="70.0"
+                        radius="9.0"
+                        styleClass="marker-shape" />
+            </Pane>
+            <Label fx:id="statusLabel" styleClass="status-label" />
+        </VBox>
+    </center>
+    <bottom>
+        <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="footer-panel">
+            <padding>
+                <Insets bottom="16.0" left="20.0" right="20.0" top="12.0" />
+            </padding>
+            <Button onAction="#handleReset" text="Reset" />
+            <Button cancelButton="true" onAction="#handleExit" text="Exit" />
+        </HBox>
+    </bottom>
+</BorderPane>
