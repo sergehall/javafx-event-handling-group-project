@@ -26,7 +26,8 @@ export function SiteNavigation() {
       <nav aria-label="Primary navigation">
         <ul className="site-nav">
           {NAVIGATION_ITEMS.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              pathname === item.href || (item.href !== "/" && pathname.startsWith(`${item.href}/`));
             return (
               <li key={item.href}>
                 <Link

@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function RequirementsPage() {
   return (
-    <main className="requirements-page">
+    <main className="content-page requirements-page">
       <header className="hero hero--compact requirements-hero">
         <div className="hero__eyebrow">Project brief · Group assignment</div>
         <h1>Assignment Requirements</h1>

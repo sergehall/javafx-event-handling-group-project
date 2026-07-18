@@ -6,14 +6,14 @@
 
 ## Current Demonstration
 
-- FXML view loading from classpath resources.
-- A thin JavaFX controller for UI event wiring.
-- A testable interaction model without JavaFX runtime dependencies.
-- Greeting behavior through a button and the Enter key.
-- Mouse clicks that move a marker and update visible coordinates.
-- Property bindings that respond to window resizing.
-- Reset and Exit actions.
-- An optional Next.js companion for browser-based event and API testing.
+- A JavaFX `Application` that loads its FXML view from classpath resources.
+- `BorderPane`, `VBox`, `HBox`, `TextField`, `Button`, and `ListView` controls.
+- Add Task behavior through the button and Enter key.
+- A checkbox and Remove button for every rendered task.
+- Immediate list and completion-summary updates after every action.
+- A validated, testable task model separated from JavaFX controls.
+- A Foundation web lab that mirrors the required workflow.
+- An optional Advanced web lab with priorities, filters, and progress.
 
 ## Confirm Before Submission
 

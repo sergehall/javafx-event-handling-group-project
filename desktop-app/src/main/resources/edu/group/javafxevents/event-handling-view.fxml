@@ -3,75 +3,66 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
 <?import javafx.scene.layout.VBox?>
-<?import javafx.scene.shape.Circle?>
-<?import javafx.scene.shape.Ellipse?>
-<?import javafx.scene.shape.Rectangle?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="edu.group.javafxevents.EventHandlingController"
-            prefHeight="520.0"
-            prefWidth="780.0">
+            prefHeight="560.0"
+            prefWidth="760.0">
     <top>
         <VBox spacing="6.0" styleClass="header-panel">
             <padding>
-                <Insets bottom="16.0" left="20.0" right="20.0" top="18.0" />
+                <Insets bottom="18.0" left="24.0" right="24.0" top="20.0" />
             </padding>
-            <Label styleClass="title-label" text="JavaFX Event Handling Lab" />
-            <Label styleClass="subtitle-label" text="Button, keyboard, mouse, resize, reset, and exit events in one small application." />
+            <Label styleClass="eyebrow-label" text="GROUP ASSIGNMENT · FOUNDATION" />
+            <Label styleClass="title-label" text="JavaFX Task List" />
+            <Label styleClass="subtitle-label"
+                   text="Add tasks, mark work complete, and remove items from one synchronized list." />
         </VBox>
     </top>
     <center>
         <VBox spacing="14.0">
             <padding>
-                <Insets bottom="14.0" left="20.0" right="20.0" top="14.0" />
+                <Insets bottom="18.0" left="24.0" right="24.0" top="20.0" />
             </padding>
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-                <Label labelFor="$nameField" text="Name:" />
-                <TextField fx:id="nameField"
-                           HBox.hgrow="ALWAYS"
-                           onAction="#handleGreeting"
-                           promptText="Type a name and press Enter" />
-                <Button defaultButton="true" onAction="#handleGreeting" text="Say hello" />
-            </HBox>
-            <Label fx:id="greetingLabel" styleClass="message-label" wrapText="true" />
-            <Pane fx:id="playground"
-                  minHeight="250.0"
-                  onMouseClicked="#handlePlaygroundClick"
-                  prefHeight="300.0"
-                  styleClass="playground"
-                  VBox.vgrow="ALWAYS">
-                <Rectangle fx:id="anchorRectangle"
-                           arcHeight="16.0"
-                           arcWidth="16.0"
-                           height="52.0"
-                           styleClass="anchor-shape"
-                           width="76.0" />
-                <Ellipse fx:id="centerEllipse"
-                         radiusX="66.0"
-                         radiusY="38.0"
-                         styleClass="target-shape" />
-                <Circle fx:id="marker"
-                        centerX="70.0"
-                        centerY="70.0"
-                        radius="9.0"
-                        styleClass="marker-shape" />
-            </Pane>
-            <Label fx:id="statusLabel" styleClass="status-label" />
+            <VBox spacing="8.0" styleClass="input-panel">
+                <Label labelFor="$taskField" styleClass="field-label" text="New task" />
+                <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <TextField fx:id="taskField"
+                               HBox.hgrow="ALWAYS"
+                               onAction="#handleAddTask"
+                               promptText="What needs to be done?" />
+                    <Button fx:id="addTaskButton"
+                            defaultButton="true"
+                            onAction="#handleAddTask"
+                            text="Add Task" />
+                </HBox>
+                <Label fx:id="statusLabel" styleClass="status-label" wrapText="true" />
+            </VBox>
+            <ListView fx:id="taskListView"
+                      accessibleText="Task list"
+                      styleClass="task-list"
+                      VBox.vgrow="ALWAYS">
+                <placeholder>
+                    <VBox alignment="CENTER" spacing="6.0">
+                        <Label styleClass="empty-title" text="No tasks yet" />
+                        <Label styleClass="empty-copy" text="Add a task above to begin your list." />
+                    </VBox>
+                </placeholder>
+            </ListView>
         </VBox>
     </center>
     <bottom>
-        <HBox alignment="CENTER_RIGHT" spacing="10.0" styleClass="footer-panel">
+        <HBox alignment="CENTER_RIGHT" styleClass="footer-panel">
             <padding>
-                <Insets bottom="16.0" left="20.0" right="20.0" top="12.0" />
+                <Insets bottom="15.0" left="24.0" right="24.0" top="15.0" />
             </padding>
-            <Button onAction="#handleReset" text="Reset" />
-            <Button cancelButton="true" onAction="#handleExit" text="Exit" />
+            <Label fx:id="summaryLabel" styleClass="summary-label" text="0 of 0 tasks completed" />
         </HBox>
     </bottom>
 </BorderPane>

@@ -25,7 +25,7 @@ export default async function MaterialsPage() {
   );
 
   return (
-    <main>
+    <main className="content-page">
       <header className="hero hero--compact">
         <div className="hero__eyebrow">Project reference</div>
         <h1>Assignment Materials</h1>

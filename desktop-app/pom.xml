@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>desktop-app</artifactId>
-    <name>JavaFX Event Handling Desktop App</name>
+    <name>JavaFX Task List Desktop App</name>
 
     <dependencies>
         <dependency>

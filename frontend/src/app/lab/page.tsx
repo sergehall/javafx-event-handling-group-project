@@ -1,24 +1,25 @@
 import type { Metadata } from "next";
-import { EventLab } from "@/features/event-lab/components/event-lab";
+import { FoundationTaskLab } from "@/features/event-lab/components/foundation-task-lab";
+import { LabModeNavigation } from "@/features/event-lab/components/lab-mode-navigation";
 
 export const metadata: Metadata = {
-  title: "Event Handling Web Lab",
-  description: "Interactive browser companion for practicing event handling flows.",
+  title: "Foundation Task Web Lab",
+  description: "Required JavaFX Task List workflow mirrored in the browser.",
 };
 
 export default function LabPage() {
   return (
-    <main>
+    <main className="content-page">
+      <LabModeNavigation activeMode="foundation" />
       <header className="hero hero--compact">
-        <div className="hero__eyebrow">Interactive companion</div>
-        <h1>Event Handling Web Lab</h1>
+        <div className="hero__eyebrow">Foundation path · Required workflow</div>
+        <h1>Foundation Task Web Lab</h1>
         <p>
-          Practice input, pointer, and reset events in the browser, then verify that optional events
-          reach the Spring Boot API. This lab supports the project but does not replace the JavaFX
-          deliverable.
+          Practice the exact task workflow required by the assignment: add items, mark them
+          complete, remove them, and keep the list synchronized after every event.
         </p>
       </header>
-      <EventLab />
+      <FoundationTaskLab />
     </main>
   );
 }

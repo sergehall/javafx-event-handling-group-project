@@ -1,84 +1,137 @@
 .root {
-    -fx-background-color: #f7f3eb;
+    -fx-background-color: #f5f1e8;
     -fx-font-family: "Avenir Next", "Segoe UI", sans-serif;
     -fx-font-size: 14px;
 }
 
 .header-panel {
-    -fx-background-color: #163d32;
+    -fx-background-color: #173f34;
+}
+
+.eyebrow-label {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #a8d7c8;
 }
 
 .title-label {
-    -fx-font-size: 24px;
-    -fx-font-weight: 800;
+    -fx-font-family: Georgia, serif;
+    -fx-font-size: 30px;
+    -fx-font-weight: 700;
     -fx-text-fill: #fffdf8;
 }
 
 .subtitle-label {
-    -fx-text-fill: #cde0d8;
+    -fx-text-fill: #c9ddd6;
 }
 
-.message-label {
-    -fx-font-size: 16px;
-    -fx-font-weight: 700;
-    -fx-text-fill: #163d32;
-}
-
-.playground {
+.input-panel {
     -fx-background-color: #fffdf8;
     -fx-background-radius: 14px;
-    -fx-border-color: #c7c0b4;
+    -fx-border-color: #d1c9bc;
     -fx-border-radius: 14px;
-    -fx-cursor: crosshair;
+    -fx-padding: 14px;
 }
 
-.anchor-shape {
-    -fx-fill: #f6a44c;
-    -fx-stroke: #8d4f10;
-    -fx-stroke-width: 2px;
+.field-label {
+    -fx-font-weight: 800;
+    -fx-text-fill: #173f34;
 }
 
-.target-shape {
-    -fx-fill: #d8ebe4;
-    -fx-stroke: #2a6f5d;
-    -fx-stroke-width: 3px;
+.text-field {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 9px;
+    -fx-border-color: #aaa296;
+    -fx-border-radius: 9px;
+    -fx-padding: 9px 11px;
 }
 
-.marker-shape {
-    -fx-fill: #d94c4c;
-    -fx-stroke: #7f2424;
-    -fx-stroke-width: 2px;
-}
-
-.status-label {
-    -fx-text-fill: #5c625f;
-}
-
-.footer-panel {
-    -fx-background-color: #eee8dc;
+.text-field:focused {
+    -fx-border-color: #2d715f;
+    -fx-border-width: 2px;
 }
 
 .button {
-    -fx-background-color: #163d32;
-    -fx-background-radius: 8px;
+    -fx-background-color: #173f34;
+    -fx-background-radius: 9px;
     -fx-cursor: hand;
-    -fx-font-weight: 700;
-    -fx-padding: 8px 14px;
+    -fx-font-weight: 800;
+    -fx-padding: 9px 15px;
     -fx-text-fill: #fffdf8;
 }
 
 .button:hover {
-    -fx-background-color: #2a6f5d;
+    -fx-background-color: #2d715f;
 }
 
-.text-field {
-    -fx-background-radius: 8px;
-    -fx-border-color: #a9a196;
-    -fx-border-radius: 8px;
+.status-label {
+    -fx-text-fill: #626c67;
+}
+
+.task-list {
+    -fx-background-color: #fffdf8;
+    -fx-background-radius: 14px;
+    -fx-border-color: #d1c9bc;
+    -fx-border-radius: 14px;
+    -fx-padding: 4px;
+}
+
+.task-list .viewport,
+.task-list .virtual-flow {
+    -fx-background-color: transparent;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #eee8dc transparent;
     -fx-padding: 8px 10px;
 }
 
-.text-field:focused {
-    -fx-border-color: #2a6f5d;
-    -fx-border-width: 2px;
+.list-cell:empty {
+    -fx-border-color: transparent;
+}
+
+.task-row {
+    -fx-padding: 3px 0;
+}
+
+.task-title {
+    -fx-fill: #173f34;
+    -fx-font-size: 15px;
+    -fx-font-weight: 700;
+}
+
+.task-row:completed .task-title {
+    -fx-fill: #87918c;
+}
+
+.remove-button {
+    -fx-background-color: transparent;
+    -fx-border-color: #d1c9bc;
+    -fx-border-radius: 8px;
+    -fx-text-fill: #8a3d3d;
+}
+
+.remove-button:hover {
+    -fx-background-color: #fae8e4;
+    -fx-text-fill: #7a2f2f;
+}
+
+.empty-title {
+    -fx-font-size: 16px;
+    -fx-font-weight: 800;
+    -fx-text-fill: #173f34;
+}
+
+.empty-copy {
+    -fx-text-fill: #727b77;
+}
+
+.footer-panel {
+    -fx-background-color: #eae4d8;
+}
+
+.summary-label {
+    -fx-font-weight: 800;
+    -fx-text-fill: #173f34;
 }

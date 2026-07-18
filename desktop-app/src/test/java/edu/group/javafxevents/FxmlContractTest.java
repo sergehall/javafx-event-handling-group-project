@@ -19,13 +19,14 @@ class FxmlContractTest {
     for (String expected :
         new String[] {
           "EventHandlingController",
-          "fx:id=\"nameField\"",
-          "fx:id=\"playground\"",
-          "fx:id=\"marker\"",
-          "#handleGreeting",
-          "#handlePlaygroundClick",
-          "#handleReset",
-          "#handleExit"
+          "<BorderPane",
+          "<VBox",
+          "fx:id=\"taskField\"",
+          "fx:id=\"addTaskButton\"",
+          "fx:id=\"taskListView\"",
+          "fx:id=\"summaryLabel\"",
+          "#handleAddTask",
+          "text=\"Add Task\""
         }) {
       assertTrue(fxml.contains(expected), () -> "Missing FXML contract value: " + expected);
     }

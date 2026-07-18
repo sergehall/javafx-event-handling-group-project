@@ -77,11 +77,11 @@ ready and then open it in the default browser automatically.
 
 The application demonstrates:
 
-- button and Enter-key actions;
-- mouse click handling and coordinates;
-- resize-aware property bindings;
-- reset behavior;
-- clean application exit.
+- a JavaFX `Application` with an FXML `BorderPane`/`VBox` layout;
+- task entry through a text field, the Add Task button, or Enter;
+- a `ListView` with a checkbox and Remove button for every task;
+- immediate UI updates when tasks are added, completed, or removed;
+- input validation and a testable task model separated from the controller.
 
 ## Run the Browser Test Lab
 
@@ -106,9 +106,10 @@ Start the Next.js frontend in a third terminal:
 npm run start:frontend
 ```
 
-Open `http://127.0.0.1:3000`. The browser communicates with same-origin Next.js
-Route Handlers, which validate data and forward only the expected requests to
-the local Spring Boot API.
+Open `http://127.0.0.1:3000`. The Foundation route at `/lab` mirrors the required
+To-Do List workflow, while `/lab/advanced` adds priorities, filters, and progress
+tracking. The optional same-origin Next.js Route Handlers remain available for
+typed API testing and forward only validated requests to the local Spring Boot API.
 
 The default API address is `http://127.0.0.1:8081`. To change it locally, copy
 `frontend/.env.example` to `frontend/.env.local`; the local file is ignored by
