@@ -10,15 +10,20 @@ This repository is intentionally independent from any personal portfolio, privat
 javafx-event-handling-group-project/
 |-- desktop-app/   Standalone JavaFX + FXML assignment
 |-- group-api/     Small Spring Boot API for optional interaction history
+|-- frontend/      Optional Next.js web lab for browser and API testing
 |-- compose.yaml   Local PostgreSQL only
 `-- .env.example   Safe local configuration template
 ```
 
 The JavaFX desktop app does not require Spring Boot or PostgreSQL. The API is an optional collaboration extension and remains isolated from the assignment UI.
+The Next.js frontend is also optional: it mirrors the event-handling flows in a
+browser and provides a typed test interface for the API without replacing the
+JavaFX/FXML deliverable.
 
 ## Requirements
 
 - JDK 21
+- Node.js 20.9 or newer (Node.js 24 recommended for the frontend)
 - Docker Desktop, Colima, or another Docker-compatible runtime
 - Git
 
@@ -29,6 +34,7 @@ Maven is provided through the repository wrapper, so a global Maven installation
 ```bash
 cp .env.example .env
 ./mvnw clean verify
+npm ci --prefix frontend
 ```
 
 The `.env` file is ignored by Git. Only `.env.example` should be committed.
@@ -46,6 +52,37 @@ The application demonstrates:
 - resize-aware property bindings;
 - reset behavior;
 - clean application exit.
+
+## Run the Browser Test Lab
+
+The web lab remains useful when the API is offline, but start all optional
+services to test persistence and API health.
+
+Start PostgreSQL:
+
+```bash
+./start-infrastructure.sh
+```
+
+Start the Spring Boot API in a second terminal:
+
+```bash
+./mvnw -pl group-api spring-boot:run
+```
+
+Start the Next.js frontend in a third terminal:
+
+```bash
+npm --prefix frontend run dev
+```
+
+Open `http://127.0.0.1:3000`. The browser communicates with same-origin Next.js
+Route Handlers, which validate data and forward only the expected requests to
+the local Spring Boot API.
+
+The default API address is `http://127.0.0.1:8081`. To change it locally, copy
+`frontend/.env.example` to `frontend/.env.local`; the local file is ignored by
+Git.
 
 ## Run PostgreSQL and the API
 
@@ -96,6 +133,7 @@ curl 'http://127.0.0.1:8081/api/v1/interactions?limit=20'
 
 ```bash
 ./mvnw clean verify
+npm --prefix frontend run verify
 docker compose config
 ```
 
@@ -105,7 +143,11 @@ docker compose config
 - Keep PostgreSQL and the API bound to `127.0.0.1` for local coursework.
 - Use the checked-in Flyway migration instead of editing the database manually.
 - Validate every API request and never log submitted personal data or secrets.
+- Keep `GROUP_API_BASE_URL` server-side; never expose backend credentials through
+  a `NEXT_PUBLIC_*` variable.
 
 ## Before Submission
 
 Confirm the instructor's complete rubric and group-submission policy. If only the JavaFX application is required, submit the `desktop-app` module and exclude `target`, `.env`, `.idea`, database volumes, and operating-system files.
+The optional `frontend`, `group-api`, and Docker files should also be excluded
+when the rubric requests only the JavaFX deliverable.
