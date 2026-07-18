@@ -34,10 +34,30 @@ Maven is provided through the repository wrapper, so a global Maven installation
 ```bash
 cp .env.example .env
 ./mvnw clean verify
+npm ci
 npm ci --prefix frontend
 ```
 
 The `.env` file is ignored by Git. Only `.env.example` should be committed.
+
+## Project Commands
+
+The root `package.json` provides one command interface for the complete project:
+
+| Command | Starts or stops |
+| --- | --- |
+| `npm start` | PostgreSQL, Spring Boot API, Next.js, and JavaFX |
+| `npm run start:web` | PostgreSQL, Spring Boot API, and Next.js |
+| `npm run start:infra` | PostgreSQL in Docker Desktop |
+| `npm run stop:infra` | PostgreSQL, preserving its container and volume |
+| `npm run start:frontend` | Next.js only |
+| `npm run start:api` | Spring Boot API only |
+| `npm run start:desktop` | Standalone JavaFX application only |
+| `npm run verify` | Maven, frontend, and Compose quality gates |
+
+Press `Ctrl+C` to stop the foreground processes started by `npm start` or
+`npm run start:web`. PostgreSQL intentionally keeps running; stop it separately
+with `npm run stop:infra` when required.
 
 ## Run the JavaFX Assignment
 
@@ -61,19 +81,19 @@ services to test persistence and API health.
 Start PostgreSQL:
 
 ```bash
-./start-infrastructure.sh
+npm run start:infra
 ```
 
 Start the Spring Boot API in a second terminal:
 
 ```bash
-./mvnw -pl group-api spring-boot:run
+npm run start:api
 ```
 
 Start the Next.js frontend in a third terminal:
 
 ```bash
-npm --prefix frontend run dev
+npm run start:frontend
 ```
 
 Open `http://127.0.0.1:3000`. The browser communicates with same-origin Next.js
@@ -89,7 +109,7 @@ Git.
 Start the required local infrastructure from the project root:
 
 ```bash
-./start-infrastructure.sh
+npm run start:infra
 ```
 
 The script validates the Docker environment, starts PostgreSQL through
@@ -104,7 +124,7 @@ a local ignored `.env` file.
 Start the API in another terminal:
 
 ```bash
-./mvnw -pl group-api spring-boot:run
+npm run start:api
 ```
 
 Verify health:
@@ -116,7 +136,7 @@ curl http://127.0.0.1:8081/actuator/health
 Stop PostgreSQL while keeping the container and its volume for the next start:
 
 ```bash
-./stop-infrastructure.sh
+npm run stop:infra
 ```
 
 IntelliJ IDEA also provides shared `Start Infrastructure` and
@@ -144,9 +164,7 @@ curl 'http://127.0.0.1:8081/api/v1/interactions?limit=20'
 ## Verification
 
 ```bash
-./mvnw clean verify
-npm --prefix frontend run verify
-docker compose config
+npm run verify
 ```
 
 ## Security Rules
