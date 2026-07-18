@@ -57,6 +57,7 @@ The root `package.json` provides one command interface for the complete project:
 | `npm run start:api` | Spring Boot API only |
 | `npm run start:desktop` | Standalone JavaFX application only |
 | `npm run lint` | Checkstyle for Java and ESLint for the frontend |
+| `npm run lint:fix` | Apply safe formatter and ESLint fixes, then run lint |
 | `npm run format` | Format Java with Spotless and the frontend with Prettier |
 | `npm run format:check` | Check formatting without changing files |
 | `npm run verify` | Maven, frontend, and Compose quality gates |

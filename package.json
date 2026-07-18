@@ -14,6 +14,7 @@
     "start:api": "./mvnw -pl group-api spring-boot:run",
     "start:desktop": "./mvnw -pl desktop-app javafx:run",
     "lint": "./mvnw -B -ntp checkstyle:check && npm --prefix frontend run lint",
+    "lint:fix": "npm run format && npm --prefix frontend run lint:fix && npm run lint",
     "format": "./mvnw -B -ntp spotless:apply && npm --prefix frontend run format",
     "format:check": "./mvnw -B -ntp spotless:check && npm --prefix frontend run format:check",
     "verify": "./mvnw clean verify && npm --prefix frontend run verify && docker compose config"
