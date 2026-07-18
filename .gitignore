@@ -7,6 +7,12 @@
 target/
 **/target/
 
+# Next.js and frontend output
+frontend/node_modules/
+frontend/.next/
+frontend/coverage/
+frontend/*.tsbuildinfo
+
 # IDE and operating system files
 .idea/
 .vscode/
