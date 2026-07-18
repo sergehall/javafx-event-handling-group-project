@@ -23,7 +23,7 @@ JavaFX/FXML deliverable.
 ## Requirements
 
 - JDK 21
-- Node.js 20.9 or newer (Node.js 24 recommended for the frontend)
+- Node.js 24.16.0 (pinned in `.nvmrc`)
 - Docker Desktop
 - Git
 
@@ -32,13 +32,16 @@ Maven is provided through the repository wrapper, so a global Maven installation
 ## First Setup
 
 ```bash
+nvm use
 cp .env.example .env
 ./mvnw clean verify
 npm ci
 npm ci --prefix frontend
 ```
 
-The `.env` file is ignored by Git. Only `.env.example` should be committed.
+The root `.npmrc` rejects dependency installation on a different Node.js
+version. The `.env` file is ignored by Git. Only `.env.example` should be
+committed.
 
 ## Project Commands
 

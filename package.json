@@ -14,7 +14,7 @@
     "verify": "./mvnw clean verify && npm --prefix frontend run verify && docker compose config"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": "24.16.0"
   },
   "packageManager": "npm@11.13.0",
   "devDependencies": {
