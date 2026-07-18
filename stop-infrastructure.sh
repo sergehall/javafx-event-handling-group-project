@@ -22,9 +22,9 @@ if ! docker --context "$DOCKER_CONTEXT" info >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "Creating or starting the project infrastructure..."
+echo "Stopping the project infrastructure..."
 docker --context "$DOCKER_CONTEXT" compose config --quiet
-docker --context "$DOCKER_CONTEXT" compose up --detach --wait --no-recreate postgres
+docker --context "$DOCKER_CONTEXT" compose stop postgres
 
-echo "Infrastructure is ready:"
-docker --context "$DOCKER_CONTEXT" compose ps postgres
+echo "Infrastructure is stopped. The container and database volume are preserved:"
+docker --context "$DOCKER_CONTEXT" compose ps --all postgres

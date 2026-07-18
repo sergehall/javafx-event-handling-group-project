@@ -24,7 +24,7 @@ JavaFX/FXML deliverable.
 
 - JDK 21
 - Node.js 20.9 or newer (Node.js 24 recommended for the frontend)
-- Docker Desktop, Colima, or another Docker-compatible runtime
+- Docker Desktop
 - Git
 
 Maven is provided through the repository wrapper, so a global Maven installation is not required.
@@ -96,8 +96,10 @@ The script validates the Docker environment, starts PostgreSQL through
 `compose.yaml`, waits for its health check, and prints the container status. On
 the first run it creates the container and named volume. Later runs start the
 same container with `--no-recreate`, so the infrastructure and stored data are
-reused. The script uses the safe defaults from the Compose file or optional
-values from a local ignored `.env` file.
+reused. Both infrastructure scripts explicitly use Docker Desktop's
+`desktop-linux` context, preventing an accidental duplicate in another runtime.
+The script uses the safe defaults from the Compose file or optional values from
+a local ignored `.env` file.
 
 Start the API in another terminal:
 
@@ -114,8 +116,12 @@ curl http://127.0.0.1:8081/actuator/health
 Stop PostgreSQL while keeping the container and its volume for the next start:
 
 ```bash
-docker compose stop postgres
+./stop-infrastructure.sh
 ```
+
+IntelliJ IDEA also provides shared `Start Infrastructure` and
+`Stop Infrastructure` run configurations in the toolbar selector. They run the
+same root scripts, so terminal and IDE usage have identical behavior.
 
 Use `docker compose down` only when you intentionally want to remove the
 container and project network. The named database volume is still preserved
