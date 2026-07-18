@@ -93,9 +93,11 @@ Start the required local infrastructure from the project root:
 ```
 
 The script validates the Docker environment, starts PostgreSQL through
-`compose.yaml`, waits for its health check, and prints the container status.
-It uses the safe defaults from the Compose file or optional values from a local
-ignored `.env` file.
+`compose.yaml`, waits for its health check, and prints the container status. On
+the first run it creates the container and named volume. Later runs start the
+same container with `--no-recreate`, so the infrastructure and stored data are
+reused. The script uses the safe defaults from the Compose file or optional
+values from a local ignored `.env` file.
 
 Start the API in another terminal:
 
@@ -109,11 +111,15 @@ Verify health:
 curl http://127.0.0.1:8081/actuator/health
 ```
 
-Stop the database without deleting its volume:
+Stop PostgreSQL while keeping the container and its volume for the next start:
 
 ```bash
-docker compose down
+docker compose stop postgres
 ```
+
+Use `docker compose down` only when you intentionally want to remove the
+container and project network. The named database volume is still preserved
+unless `--volumes` is explicitly supplied.
 
 ## API Example
 

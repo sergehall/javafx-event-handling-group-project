@@ -16,9 +16,9 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "Starting the project infrastructure..."
+echo "Creating or starting the project infrastructure..."
 docker compose config --quiet
-docker compose up --detach --wait postgres
+docker compose up --detach --wait --no-recreate postgres
 
 echo "Infrastructure is ready:"
 docker compose ps postgres
