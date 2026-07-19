@@ -122,6 +122,10 @@ The root `package.json` provides one command interface for the complete project:
 | `npm start`              | PostgreSQL, Spring Boot API, Next.js, and JavaFX         |
 | `npm run start:web`      | PostgreSQL, Spring Boot API, and Next.js                 |
 | `npm run start:infra`    | PostgreSQL in Docker Desktop                             |
+| `npm run stop:web`       | Next.js and Spring Boot processes owned by this project  |
+| `npm run stop:desktop`   | JavaFX processes owned by this project                   |
+| `npm run stop:processes` | All local web and JavaFX processes owned by this project |
+| `npm run stop:all`       | All project processes and PostgreSQL infrastructure      |
 | `npm run stop:infra`     | PostgreSQL, preserving its container and volume          |
 | `npm run start:frontend` | Next.js, then opens it in the default browser            |
 | `npm run start:api`      | Spring Boot API only                                     |
@@ -135,6 +139,20 @@ The root `package.json` provides one command interface for the complete project:
 Press `Ctrl+C` to stop the foreground processes started by `npm start` or
 `npm run start:web`. PostgreSQL intentionally keeps running; stop it separately
 with `npm run stop:infra` when required.
+
+If a terminal was closed without stopping its child processes and `start:web`
+reports `EADDRINUSE` for port `3000` or `8081`, run:
+
+```bash
+npm run stop:web
+npm run start:web
+```
+
+The stop script prints the PID and command it terminates and verifies that each
+listener belongs to this repository before sending a signal. It refuses to stop
+an unrelated application using the same port. Use `npm run stop:processes` to
+also close JavaFX, or `npm run stop:all` to additionally stop PostgreSQL while
+preserving its Docker volume and data.
 
 Commands that include the frontend wait for `http://127.0.0.1:3000` to become
 ready and then open it in the default browser automatically.
