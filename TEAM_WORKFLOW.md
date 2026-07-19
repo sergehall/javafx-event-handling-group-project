@@ -2,7 +2,7 @@
 
 ## Contributors
 
-- Student 1: add name
+- Student 1: Siarhei
 - Student 2: add name
 
 Update this file before the first shared commit.
