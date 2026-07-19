@@ -1,47 +1,38 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
+import { TaskStorageStatus } from "@/features/event-lab/components/task-storage-status";
+import {
+  MAX_TASK_LENGTH,
+  type Task,
+  type TaskPriority,
+  type TaskStatus,
+} from "@/features/event-lab/contracts/task";
+import { useSharedTasks } from "@/features/event-lab/hooks/use-shared-tasks";
 
-const MAX_TASK_LENGTH = 80;
-
-type Priority = "high" | "medium" | "low";
-type TaskStatus = "active" | "review" | "completed";
-type StatusFilter = "all" | TaskStatus;
-type PriorityFilter = "all" | Priority;
-
-type Task = Readonly<{
-  id: number;
-  title: string;
-  priority: Priority;
-  status: TaskStatus;
-}>;
-
-const INITIAL_TASKS: readonly Task[] = [
-  { id: 1, title: "Design the JavaFX task layout", priority: "high", status: "completed" },
-  { id: 2, title: "Connect add and remove handlers", priority: "medium", status: "active" },
-  { id: 3, title: "Record the final walkthrough", priority: "low", status: "review" },
-];
+type StatusFilter = "ALL" | TaskStatus;
+type PriorityFilter = "ALL" | TaskPriority;
 
 const PRIORITIES = [
-  { value: "high", label: "High" },
-  { value: "medium", label: "Medium" },
-  { value: "low", label: "Low" },
-] as const satisfies readonly { value: Priority; label: string }[];
+  { value: "HIGH", label: "High" },
+  { value: "MEDIUM", label: "Medium" },
+  { value: "LOW", label: "Low" },
+] as const satisfies readonly { value: TaskPriority; label: string }[];
 
 const STATUSES = [
-  { value: "active", label: "Active" },
-  { value: "review", label: "In Review" },
-  { value: "completed", label: "Completed" },
+  { value: "ACTIVE", label: "Active" },
+  { value: "IN_REVIEW", label: "In Review" },
+  { value: "COMPLETED", label: "Completed" },
 ] as const satisfies readonly { value: TaskStatus; label: string }[];
 
-const STATUS_FILTERS = [{ value: "all", label: "All" }, ...STATUSES] as const satisfies readonly {
+const STATUS_FILTERS = [{ value: "ALL", label: "All" }, ...STATUSES] as const satisfies readonly {
   value: StatusFilter;
   label: string;
 }[];
 
 const PRIORITY_FILTERS = [
-  { value: "all", label: "All" },
+  { value: "ALL", label: "All" },
   ...PRIORITIES,
 ] as const satisfies readonly { value: PriorityFilter; label: string }[];
 
@@ -50,30 +41,48 @@ function matchesFilters(
   statusFilter: StatusFilter,
   priorityFilter: PriorityFilter,
 ): boolean {
-  const matchesStatus = statusFilter === "all" || task.status === statusFilter;
-  const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+  const matchesStatus = statusFilter === "ALL" || task.status === statusFilter;
+  const matchesPriority = priorityFilter === "ALL" || task.priority === priorityFilter;
   return matchesStatus && matchesPriority;
 }
 
-export function AdvancedTaskLab() {
-  const [tasks, setTasks] = useState<readonly Task[]>(INITIAL_TASKS);
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<Priority>("medium");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
-  const [error, setError] = useState("");
-  const nextTaskId = useRef(4);
+function priorityClass(priority: TaskPriority): string {
+  return priority.toLowerCase();
+}
 
-  const activeCount = tasks.filter((task) => task.status === "active").length;
-  const reviewCount = tasks.filter((task) => task.status === "review").length;
-  const completedCount = tasks.filter((task) => task.status === "completed").length;
+function statusClass(status: TaskStatus): string {
+  return status === "IN_REVIEW" ? "review" : status.toLowerCase();
+}
+
+export function AdvancedTaskLab() {
+  const {
+    tasks,
+    connectionState,
+    isMutating,
+    isSynchronizing,
+    canMutate,
+    refresh,
+    createTask,
+    updateTask,
+    removeTask,
+    clearCompletedTasks,
+  } = useSharedTasks();
+  const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState<TaskPriority>("MEDIUM");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("ALL");
+  const [error, setError] = useState("");
+
+  const activeCount = tasks.filter((task) => task.status === "ACTIVE").length;
+  const reviewCount = tasks.filter((task) => task.status === "IN_REVIEW").length;
+  const completedCount = tasks.filter((task) => task.status === "COMPLETED").length;
   const progress = tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100);
   const visibleTasks = useMemo(
     () => tasks.filter((task) => matchesFilters(task, statusFilter, priorityFilter)),
     [priorityFilter, statusFilter, tasks],
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextTitle = title.trim();
 
@@ -90,38 +99,41 @@ export function AdvancedTaskLab() {
       return;
     }
 
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      {
-        id: nextTaskId.current,
-        title: nextTitle,
-        priority,
-        status: "active",
-      },
-    ]);
-    nextTaskId.current += 1;
+    const result = await createTask({ title: nextTitle, priority });
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
     setTitle("");
     setError("");
   }
 
-  function updateTaskPriority(taskId: number, nextPriority: Priority) {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === taskId ? { ...task, priority: nextPriority } : task)),
-    );
+  async function updateTaskPriority(taskId: number, nextPriority: TaskPriority) {
+    const result = await updateTask(taskId, { priority: nextPriority });
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
-  function updateTaskStatus(taskId: number, nextStatus: TaskStatus) {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => (task.id === taskId ? { ...task, status: nextStatus } : task)),
-    );
+  async function updateTaskStatus(taskId: number, nextStatus: TaskStatus) {
+    const result = await updateTask(taskId, { status: nextStatus });
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
-  function removeTask(taskId: number) {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+  async function handleRemoveTask(taskId: number) {
+    const result = await removeTask(taskId);
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
-  function clearCompleted() {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.status !== "completed"));
+  async function clearCompleted() {
+    const result = await clearCompletedTasks();
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
   return (
@@ -135,9 +147,16 @@ export function AdvancedTaskLab() {
             status, priority, filters, and delivery progress.
           </p>
         </div>
-        <div className="advanced-lab__completion" aria-label={`${progress}% complete`}>
-          <strong>{progress}%</strong>
-          <span>complete</span>
+        <div className="advanced-lab__summary">
+          <TaskStorageStatus
+            state={connectionState}
+            isSyncing={isSynchronizing}
+            onRefresh={() => void refresh()}
+          />
+          <div className="advanced-lab__completion" aria-label={`${progress}% complete`}>
+            <strong>{progress}%</strong>
+            <span>complete</span>
+          </div>
         </div>
       </header>
 
@@ -179,7 +198,10 @@ export function AdvancedTaskLab() {
             id="advanced-task-title"
             value={title}
             maxLength={MAX_TASK_LENGTH + 1}
-            onChange={(event) => setTitle(event.target.value)}
+            onChange={(event) => {
+              setTitle(event.target.value);
+              setError("");
+            }}
             aria-describedby={error ? "advanced-task-error" : "advanced-task-hint"}
             aria-invalid={error !== ""}
             placeholder="What needs to be done?"
@@ -190,7 +212,8 @@ export function AdvancedTaskLab() {
           <select
             id="advanced-task-priority"
             value={priority}
-            onChange={(event) => setPriority(event.target.value as Priority)}
+            onChange={(event) => setPriority(event.target.value as TaskPriority)}
+            disabled={!canMutate}
           >
             {PRIORITIES.map((option) => (
               <option key={option.value} value={option.value}>
@@ -199,12 +222,17 @@ export function AdvancedTaskLab() {
             ))}
           </select>
         </div>
-        <button type="submit">Add task</button>
+        <button type="submit" disabled={!canMutate}>
+          {isMutating ? "Saving…" : "Add task"}
+        </button>
         <p
           id={error ? "advanced-task-error" : "advanced-task-hint"}
           className={`advanced-task-form__message${error ? " advanced-task-form__message--error" : ""}`}
         >
-          {error || `Use Enter or Add task. Maximum ${MAX_TASK_LENGTH} characters.`}
+          {error ||
+            (connectionState === "offline"
+              ? "Start PostgreSQL and group-api, then choose Retry."
+              : `Use Enter or Add task. Maximum ${MAX_TASK_LENGTH} characters.`)}
         </p>
       </form>
 
@@ -242,29 +270,41 @@ export function AdvancedTaskLab() {
         <button
           type="button"
           className="clear-completed"
-          disabled={completedCount === 0}
-          onClick={clearCompleted}
+          disabled={completedCount === 0 || !canMutate}
+          onClick={() => void clearCompleted()}
         >
           Clear completed
         </button>
       </div>
 
-      {visibleTasks.length === 0 ? (
+      {connectionState === "loading" ? (
+        <div className="advanced-empty-state" role="status">
+          <strong>Loading shared tasks…</strong>
+          <span>Connecting to the same task list used by JavaFX.</span>
+        </div>
+      ) : visibleTasks.length === 0 ? (
         <div className="advanced-empty-state" role="status">
           <strong>No tasks in this view.</strong>
-          <span>Add a task or choose another filter.</span>
+          <span>
+            {connectionState === "offline"
+              ? "Task storage is unavailable. Choose Retry when the API is running."
+              : "Add a task or choose another filter."}
+          </span>
         </div>
       ) : (
         <ul className="advanced-task-list" aria-label="Tasks">
           {visibleTasks.map((task) => (
             <li
               key={task.id}
-              className={task.status === "completed" ? "advanced-task--completed" : undefined}
+              className={task.status === "COMPLETED" ? "advanced-task--completed" : undefined}
             >
               <select
-                className={`task-priority-control task-priority-control--${task.priority}`}
+                className={`task-priority-control task-priority-control--${priorityClass(task.priority)}`}
                 value={task.priority}
-                onChange={(event) => updateTaskPriority(task.id, event.target.value as Priority)}
+                disabled={!canMutate}
+                onChange={(event) =>
+                  void updateTaskPriority(task.id, event.target.value as TaskPriority)
+                }
                 aria-label={`Priority for "${task.title}"`}
               >
                 {PRIORITIES.map((option) => (
@@ -274,9 +314,12 @@ export function AdvancedTaskLab() {
                 ))}
               </select>
               <select
-                className={`task-status-control task-status-control--${task.status}`}
+                className={`task-status-control task-status-control--${statusClass(task.status)}`}
                 value={task.status}
-                onChange={(event) => updateTaskStatus(task.id, event.target.value as TaskStatus)}
+                disabled={!canMutate}
+                onChange={(event) =>
+                  void updateTaskStatus(task.id, event.target.value as TaskStatus)
+                }
                 aria-label={`Status for "${task.title}"`}
               >
                 {STATUSES.map((option) => (
@@ -289,7 +332,8 @@ export function AdvancedTaskLab() {
               <button
                 type="button"
                 className="advanced-task__remove"
-                onClick={() => removeTask(task.id)}
+                disabled={!canMutate}
+                onClick={() => void handleRemoveTask(task.id)}
                 aria-label={`Remove "${task.title}"`}
               >
                 <span aria-hidden="true">×</span>

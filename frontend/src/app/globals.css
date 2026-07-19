@@ -322,7 +322,14 @@ main {
   font-weight: 500;
 }
 
-.foundation-task-panel__heading > span {
+.foundation-task-panel__meta {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 9px;
+  align-items: center;
+}
+
+.foundation-task-panel__meta > span {
   flex: 0 0 auto;
   padding: 7px 11px;
   border: 1px solid rgb(255 255 255 / 24%);
@@ -378,6 +385,12 @@ main {
 
 .foundation-task-form button:hover {
   background: var(--forest-light);
+}
+
+.foundation-task-form button:disabled,
+.advanced-task-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
 }
 
 .foundation-task-form > p {
@@ -545,8 +558,8 @@ main {
 
 .advanced-lab__header {
   display: flex;
-  padding: clamp(28px, 5vw, 48px);
-  gap: 30px;
+  padding: clamp(18px, 2.5vw, 28px) clamp(22px, 5vw, 48px);
+  gap: 22px;
   align-items: center;
   justify-content: space-between;
   color: white;
@@ -561,24 +574,32 @@ main {
 .advanced-lab__header h2 {
   margin: 0;
   font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2rem, 5vw, 3.7rem);
+  font-size: clamp(1.85rem, 3.7vw, 2.85rem);
   font-weight: 500;
   letter-spacing: -0.045em;
   line-height: 1;
 }
 
 .advanced-lab__header p:not(.section-heading__label) {
-  max-width: 620px;
-  margin: 16px 0 0;
+  max-width: 680px;
+  margin: 10px 0 0;
   color: #c7dad4;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.advanced-lab__summary {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 14px;
+  align-items: center;
 }
 
 .advanced-lab__completion {
   display: grid;
   flex: 0 0 auto;
-  width: 124px;
-  height: 124px;
+  width: 96px;
+  height: 96px;
   place-content: center;
   border: 1px solid rgb(255 255 255 / 24%);
   border-radius: 50%;
@@ -588,7 +609,7 @@ main {
 
 .advanced-lab__completion strong {
   font-family: Georgia, "Times New Roman", serif;
-  font-size: 2rem;
+  font-size: 1.65rem;
   font-weight: 500;
 }
 
@@ -878,6 +899,86 @@ main {
 .advanced-task__remove:hover {
   color: var(--danger);
   background: #fae8e4;
+}
+
+.advanced-task__remove:disabled,
+.task-priority-control:disabled,
+.task-status-control:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.task-storage-status {
+  display: flex;
+  min-width: 190px;
+  min-height: 52px;
+  padding: 8px 8px 8px 11px;
+  gap: 9px;
+  align-items: center;
+  border: 1px solid rgb(255 255 255 / 22%);
+  border-radius: 13px;
+  background: rgb(255 255 255 / 8%);
+}
+
+.task-storage-status__dot {
+  width: 9px;
+  height: 9px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #e0b768;
+  box-shadow: 0 0 0 4px rgb(224 183 104 / 14%);
+}
+
+.task-storage-status--online .task-storage-status__dot {
+  background: #73d4ad;
+  box-shadow: 0 0 0 4px rgb(115 212 173 / 14%);
+}
+
+.task-storage-status--offline .task-storage-status__dot {
+  background: #f1a291;
+  box-shadow: 0 0 0 4px rgb(241 162 145 / 14%);
+}
+
+.task-storage-status > span:not(.task-storage-status__dot) {
+  display: grid;
+  min-width: 0;
+  margin-right: auto;
+  gap: 1px;
+}
+
+.task-storage-status strong {
+  color: #fffdf8;
+  font-size: 0.7rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.task-storage-status small {
+  color: #bcd3cb;
+  font-size: 0.58rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.task-storage-status button {
+  min-height: 31px;
+  padding: 6px 8px;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 8px;
+  color: #fffdf8;
+  background: rgb(255 255 255 / 9%);
+  font-size: 0.62rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.task-storage-status button:hover:not(:disabled) {
+  background: rgb(255 255 255 / 16%);
+}
+
+.task-storage-status button:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .advanced-empty-state {
@@ -2183,6 +2284,17 @@ input[aria-invalid="true"] + button + .field-note,
 
   .foundation-task-panel__heading {
     align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .foundation-task-panel__meta {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .foundation-task-panel__meta > span {
+    align-self: flex-start;
   }
 
   .foundation-task-form > div {
@@ -2278,13 +2390,45 @@ input[aria-invalid="true"] + button + .field-note,
   }
 
   .advanced-lab__header {
+    padding: 16px 20px;
+    gap: 14px;
     align-items: flex-start;
     flex-direction: column;
   }
 
+  .advanced-lab__header .section-heading__label {
+    margin-bottom: 5px;
+    font-size: 0.65rem;
+  }
+
+  .advanced-lab__header h2 {
+    font-size: 1.65rem;
+  }
+
+  .advanced-lab__header p:not(.section-heading__label) {
+    margin-top: 7px;
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .advanced-lab__summary {
+    width: 100%;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .advanced-lab__completion {
-    width: 104px;
-    height: 104px;
+    width: 72px;
+    height: 72px;
+  }
+
+  .advanced-lab__completion strong {
+    font-size: 1.35rem;
+  }
+
+  .advanced-lab__completion span {
+    font-size: 0.56rem;
   }
 
   .advanced-task-form {

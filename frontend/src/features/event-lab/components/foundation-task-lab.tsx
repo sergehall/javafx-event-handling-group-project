@@ -1,20 +1,10 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useRef, useState } from "react";
-
-const MAX_TASK_LENGTH = 80;
-
-type FoundationTask = Readonly<{
-  id: number;
-  title: string;
-  completed: boolean;
-}>;
-
-const INITIAL_TASKS: readonly FoundationTask[] = [
-  { id: 1, title: "Design the JavaFX layout", completed: true },
-  { id: 2, title: "Connect task event handlers", completed: false },
-];
+import { useState } from "react";
+import { TaskStorageStatus } from "@/features/event-lab/components/task-storage-status";
+import { MAX_TASK_LENGTH } from "@/features/event-lab/contracts/task";
+import { useSharedTasks } from "@/features/event-lab/hooks/use-shared-tasks";
 
 const REQUIREMENT_COVERAGE = [
   "Application class and JavaFX stage",
@@ -27,14 +17,23 @@ const REQUIREMENT_COVERAGE = [
 ] as const;
 
 export function FoundationTaskLab() {
-  const [tasks, setTasks] = useState<readonly FoundationTask[]>(INITIAL_TASKS);
+  const {
+    tasks,
+    connectionState,
+    isMutating,
+    isSynchronizing,
+    canMutate,
+    refresh,
+    createTask,
+    updateTask,
+    removeTask,
+  } = useSharedTasks();
   const [title, setTitle] = useState("");
   const [error, setError] = useState("");
-  const nextTaskId = useRef(3);
 
-  const completedCount = tasks.filter((task) => task.completed).length;
+  const completedCount = tasks.filter((task) => task.status === "COMPLETED").length;
 
-  function handleAddTask(event: FormEvent<HTMLFormElement>) {
+  async function handleAddTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextTitle = title.trim();
 
@@ -51,25 +50,29 @@ export function FoundationTaskLab() {
       return;
     }
 
-    setTasks((currentTasks) => [
-      ...currentTasks,
-      { id: nextTaskId.current, title: nextTitle, completed: false },
-    ]);
-    nextTaskId.current += 1;
+    const result = await createTask({ title: nextTitle });
+    if (!result.ok) {
+      setError(result.message);
+      return;
+    }
     setTitle("");
     setError("");
   }
 
-  function toggleTask(taskId: number) {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task,
-      ),
-    );
+  async function toggleTask(taskId: number, completed: boolean) {
+    const result = await updateTask(taskId, {
+      status: completed ? "ACTIVE" : "COMPLETED",
+    });
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
-  function removeTask(taskId: number) {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+  async function handleRemoveTask(taskId: number) {
+    const result = await removeTask(taskId);
+    if (!result.ok) {
+      setError(result.message);
+    }
   }
 
   return (
@@ -80,9 +83,16 @@ export function FoundationTaskLab() {
             <p className="section-heading__label">JavaFX assignment mirror</p>
             <h2 id="foundation-list-title">My task list</h2>
           </div>
-          <span>
-            {completedCount}/{tasks.length} complete
-          </span>
+          <div className="foundation-task-panel__meta">
+            <TaskStorageStatus
+              state={connectionState}
+              isSyncing={isSynchronizing}
+              onRefresh={() => void refresh()}
+            />
+            <span>
+              {completedCount}/{tasks.length} complete
+            </span>
+          </div>
         </div>
 
         <form className="foundation-task-form" onSubmit={handleAddTask} noValidate>
@@ -92,44 +102,63 @@ export function FoundationTaskLab() {
               id="foundation-task-title"
               value={title}
               maxLength={MAX_TASK_LENGTH + 1}
-              onChange={(event) => setTitle(event.target.value)}
+              onChange={(event) => {
+                setTitle(event.target.value);
+                setError("");
+              }}
               aria-describedby={error ? "foundation-task-error" : "foundation-task-hint"}
               aria-invalid={error !== ""}
               placeholder="What needs to be done?"
             />
-            <button type="submit">Add Task</button>
+            <button type="submit" disabled={!canMutate}>
+              {isMutating ? "Saving…" : "Add Task"}
+            </button>
           </div>
           <p
             id={error ? "foundation-task-error" : "foundation-task-hint"}
             className={error ? "foundation-task-form__error" : undefined}
           >
-            {error || "Press Enter or use Add Task. Maximum 80 characters."}
+            {error ||
+              (connectionState === "offline"
+                ? "Start PostgreSQL and group-api, then choose Retry."
+                : "Press Enter or use Add Task. Maximum 80 characters.")}
           </p>
         </form>
 
-        {tasks.length === 0 ? (
+        {connectionState === "loading" ? (
+          <div className="foundation-empty-state" role="status">
+            <strong>Loading shared tasks…</strong>
+            <span>Connecting to the same task list used by JavaFX.</span>
+          </div>
+        ) : tasks.length === 0 ? (
           <div className="foundation-empty-state" role="status">
             <strong>No tasks yet</strong>
-            <span>Add a task above to begin your list.</span>
+            <span>
+              {connectionState === "offline"
+                ? "Task storage is unavailable. Choose Retry when the API is running."
+                : "Add a task here or in JavaFX to begin the shared list."}
+            </span>
           </div>
         ) : (
           <ul className="foundation-task-list" aria-label="Foundation tasks">
             {tasks.map((task) => (
               <li
                 key={task.id}
-                className={task.completed ? "foundation-task--completed" : undefined}
+                className={task.status === "COMPLETED" ? "foundation-task--completed" : undefined}
               >
                 <input
                   id={`foundation-task-${task.id}`}
                   type="checkbox"
-                  checked={task.completed}
-                  onChange={() => toggleTask(task.id)}
-                  aria-label={`Mark "${task.title}" as ${task.completed ? "active" : "completed"}`}
+                  checked={task.status === "COMPLETED"}
+                  disabled={!canMutate}
+                  onChange={() => void toggleTask(task.id, task.status === "COMPLETED")}
+                  aria-label={`Mark "${task.title}" as ${task.status === "COMPLETED" ? "active" : "completed"}`}
                 />
                 <label htmlFor={`foundation-task-${task.id}`}>{task.title}</label>
                 <button
                   type="button"
-                  onClick={() => removeTask(task.id)}
+                  disabled={!canMutate}
+                  onClick={() => void handleRemoveTask(task.id)}
                   aria-label={`Remove "${task.title}"`}
                 >
                   Remove

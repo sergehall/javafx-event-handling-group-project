@@ -1,37 +1,46 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { AdvancedTaskLab } from "@/features/event-lab/components/advanced-task-lab";
+import { installTaskApiMock } from "@/features/event-lab/testing/task-api-mock";
 
 describe("AdvancedTaskLab", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("adds an active task with the selected priority", async () => {
+    installTaskApiMock();
     const user = userEvent.setup();
     render(<AdvancedTaskLab />);
 
+    await screen.findByText("Connect add and remove handlers");
     await user.type(screen.getByLabelText("New task"), "Write JUnit tests");
-    await user.selectOptions(screen.getByLabelText("Task priority"), "high");
+    await user.selectOptions(screen.getByLabelText("Task priority"), "HIGH");
     await user.click(screen.getByRole("button", { name: "Add task" }));
 
     expect(screen.getByText("Write JUnit tests")).toBeVisible();
-    expect(screen.getByLabelText('Priority for "Write JUnit tests"')).toHaveValue("high");
-    expect(screen.getByLabelText('Status for "Write JUnit tests"')).toHaveValue("active");
+    expect(screen.getByLabelText('Priority for "Write JUnit tests"')).toHaveValue("HIGH");
+    expect(screen.getByLabelText('Status for "Write JUnit tests"')).toHaveValue("ACTIVE");
     expect(within(screen.getByLabelText("Task statistics")).getByText("4")).toBeVisible();
   });
 
   it("moves tasks into review and combines status and priority filters", async () => {
+    installTaskApiMock();
     const user = userEvent.setup();
     render(<AdvancedTaskLab />);
 
+    await screen.findByText("Connect add and remove handlers");
     await user.selectOptions(
       screen.getByLabelText('Status for "Connect add and remove handlers"'),
-      "review",
+      "IN_REVIEW",
     );
     await user.click(screen.getByRole("button", { name: "In Review" }));
 
     expect(screen.getByText("Connect add and remove handlers")).toBeVisible();
     expect(screen.getByText("Record the final walkthrough")).toBeVisible();
 
-    await user.selectOptions(screen.getByLabelText("Priority"), "medium");
+    await user.selectOptions(screen.getByLabelText("Priority"), "MEDIUM");
 
     expect(screen.getByText("Connect add and remove handlers")).toBeVisible();
     expect(screen.queryByText("Record the final walkthrough")).not.toBeInTheDocument();
@@ -39,15 +48,17 @@ describe("AdvancedTaskLab", () => {
   });
 
   it("edits priority and reapplies the active high-priority view", async () => {
+    installTaskApiMock();
     const user = userEvent.setup();
     render(<AdvancedTaskLab />);
 
+    await screen.findByText("Connect add and remove handlers");
     await user.selectOptions(
       screen.getByLabelText('Priority for "Connect add and remove handlers"'),
-      "high",
+      "HIGH",
     );
     await user.click(screen.getByRole("button", { name: "Active" }));
-    await user.selectOptions(screen.getByLabelText("Priority"), "high");
+    await user.selectOptions(screen.getByLabelText("Priority"), "HIGH");
 
     expect(screen.getByText("Connect add and remove handlers")).toBeVisible();
     expect(screen.queryByText("Design the JavaFX task layout")).not.toBeInTheDocument();
@@ -55,12 +66,14 @@ describe("AdvancedTaskLab", () => {
   });
 
   it("clears only completed tasks", async () => {
+    installTaskApiMock();
     const user = userEvent.setup();
     render(<AdvancedTaskLab />);
 
+    await screen.findByText("Connect add and remove handlers");
     await user.selectOptions(
       screen.getByLabelText('Status for "Connect add and remove handlers"'),
-      "completed",
+      "COMPLETED",
     );
     await user.click(screen.getByRole("button", { name: "Completed" }));
 
@@ -74,9 +87,11 @@ describe("AdvancedTaskLab", () => {
   });
 
   it("removes tasks and rejects duplicate titles", async () => {
+    installTaskApiMock();
     const user = userEvent.setup();
     render(<AdvancedTaskLab />);
 
+    await screen.findByText("Design the JavaFX task layout");
     await user.type(screen.getByLabelText("New task"), "Design the JavaFX task layout");
     await user.click(screen.getByRole("button", { name: "Add task" }));
     expect(screen.getByText("That task is already on the list.")).toBeVisible();

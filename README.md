@@ -9,7 +9,7 @@ This repository is intentionally independent from any personal portfolio, privat
 ```text
 javafx-event-handling-group-project/
 |-- desktop-app/   Required JavaFX + FXML assignment
-|-- frontend/      Independent Next.js companion site and task labs
+|-- frontend/      Next.js companion site, task labs, and API proxy
 |-- group-api/     Spring Boot task persistence and interaction API
 |-- config/        Shared Java quality configuration
 |-- scripts/       Root development and infrastructure scripts
@@ -22,7 +22,7 @@ javafx-event-handling-group-project/
 ### Architecture Boundaries
 
 - `desktop-app` never connects directly to PostgreSQL. It uses the Spring Boot REST API for persistence and automatically falls back to an in-memory session when the API is unavailable at startup.
-- `frontend` is a standalone Next.js application. Its Foundation and Advanced task labs use browser state and do not require the API or database.
+- `frontend` is a Next.js application. Its Foundation and Advanced labs use typed same-origin Route Handlers to share the PostgreSQL-backed task list with JavaFX.
 - `group-api` owns task and interaction persistence. It validates requests, applies transactions through Spring Data JPA, and is the only application allowed to connect to PostgreSQL.
 - The root Maven project aggregates the Java modules, while the root npm scripts coordinate development commands. Application source code remains inside its owning module.
 - The web Advanced lab follows the JavaFX Advanced workflow so priorities, statuses, filters, and progress behavior remain consistent across both interfaces.
@@ -42,20 +42,20 @@ data is retained in the named Docker volume. The JavaFX header displays
 `Database online` after a successful API request and `Database offline` when
 persistence is unavailable.
 
-The current Next.js Foundation and Advanced labs still keep tasks in browser
-state, so web and desktop tasks are not synchronized yet. The existing
-architecture supports sharing the same records by adding typed same-origin
-Next.js Route Handlers for `/api/group/tasks` that proxy the Spring Boot task
-API:
+The Next.js Foundation and Advanced labs use typed same-origin Route Handlers
+under `/api/group/tasks`. Those handlers validate browser input and proxy the
+Spring Boot task API. JavaFX and web therefore read and edit the same records:
 
 ```text
-desktop-app ---------> group-api ---------> PostgreSQL tasks
-Next.js task labs ---> /api/group/tasks ---^
+desktop-app ---------------------------> group-api ---> PostgreSQL tasks
+Next.js labs ---> /api/group/tasks ---> group-api ---> PostgreSQL tasks
 ```
 
 Neither JavaFX nor Next.js should connect directly to PostgreSQL. The
 `group-api` remains the single validation and persistence boundary for both
-clients.
+clients. The web labs refresh in the background every five seconds and after
+each local change. Their header status shows connecting, database online, or
+database offline; offline mode is read-only until Retry succeeds.
 
 | Shared value      | API representation                 | PostgreSQL column |
 | ----------------- | ---------------------------------- | ----------------- |
@@ -180,13 +180,17 @@ The application demonstrates:
 
 ## Run the Web Companion
 
-The Next.js companion runs independently from the optional API and database:
+Run the synchronized Next.js companion, Spring Boot API, and PostgreSQL:
 
 ```bash
-npm run start:frontend
+npm run start:web
 ```
 
 The command opens `http://127.0.0.1:3000` automatically.
+
+`npm run start:frontend` still starts only Next.js and is useful for viewing
+the site's offline behavior, but task changes remain disabled until the API and
+database are available.
 
 | Route           | Purpose                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
@@ -196,10 +200,24 @@ The command opens `http://127.0.0.1:3000` automatically.
 | `/lab`          | Foundation task workflow required by the assignment                               |
 | `/lab/advanced` | JavaFX-aligned workflow with priorities, statuses, combined filters, and progress |
 
-Both task labs keep their data in browser component state and therefore require
-neither Spring Boot nor PostgreSQL. The optional same-origin Route Handlers at
-`/api/group/health` and `/api/group/interactions` validate and forward requests
-to the local Spring Boot API; they are separate from the task-list workflow.
+Both task labs use the same persisted `tasks` rows as JavaFX. Foundation exposes
+only the required add, checkbox, and remove workflow: it neither displays nor
+edits priority. When Foundation omits priority for a new task, `group-api`
+applies its `MEDIUM` default. Advanced additionally edits priority and status,
+combines filters, and clears completed tasks. The same-origin Route Handlers
+validate and forward the following operations without exposing PostgreSQL
+credentials to the browser:
+
+| Next.js endpoint                  | Spring Boot endpoint              | Purpose                 |
+| --------------------------------- | --------------------------------- | ----------------------- |
+| `GET /api/group/tasks`            | `GET /api/v1/tasks`               | Load shared tasks       |
+| `POST /api/group/tasks`           | `POST /api/v1/tasks`              | Create a task           |
+| `PATCH /api/group/tasks/{id}`     | `PATCH /api/v1/tasks/{id}`        | Change priority/status  |
+| `DELETE /api/group/tasks/{id}`    | `DELETE /api/v1/tasks/{id}`       | Remove one task         |
+| `DELETE /api/group/tasks/completed` | `DELETE /api/v1/tasks/completed` | Clear completed tasks   |
+
+The existing `/api/group/health` and `/api/group/interactions` handlers use the
+same server-only API configuration.
 
 The default API address is `http://127.0.0.1:8081`. To change it locally, copy
 `frontend/.env.example` to `frontend/.env.local`; the local file is ignored by
