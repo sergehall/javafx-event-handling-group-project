@@ -17,12 +17,12 @@ public final class EventHandlingApp extends Application {
   public void start(Stage stage) throws IOException {
     URL viewUrl = requireResource(VIEW_RESOURCE);
     Parent root = FXMLLoader.load(viewUrl);
-    Scene scene = new Scene(root, 760, 560);
+    Scene scene = new Scene(root, 880, 680);
     scene.getStylesheets().add(requireResource(STYLESHEET_RESOURCE).toExternalForm());
 
-    stage.setMinWidth(640);
-    stage.setMinHeight(500);
-    stage.setTitle("JavaFX Task List");
+    stage.setMinWidth(760);
+    stage.setMinHeight(600);
+    stage.setTitle("JavaFX Task List · Foundation & Advanced");
     stage.setScene(scene);
     stage.show();
   }

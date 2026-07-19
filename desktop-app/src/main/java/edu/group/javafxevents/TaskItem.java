@@ -4,11 +4,13 @@ package edu.group.javafxevents;
 public final class TaskItem {
   private final long id;
   private final String title;
-  private boolean completed;
+  private TaskPriority priority;
+  private TaskStatus status = TaskStatus.ACTIVE;
 
-  TaskItem(long id, String title) {
+  TaskItem(long id, String title, TaskPriority priority) {
     this.id = id;
     this.title = title;
+    this.priority = priority;
   }
 
   public long id() {
@@ -19,11 +21,27 @@ public final class TaskItem {
     return title;
   }
 
+  public TaskPriority priority() {
+    return priority;
+  }
+
   public boolean completed() {
-    return completed;
+    return status == TaskStatus.COMPLETED;
+  }
+
+  public TaskStatus status() {
+    return status;
   }
 
   void setCompleted(boolean completed) {
-    this.completed = completed;
+    status = completed ? TaskStatus.COMPLETED : TaskStatus.ACTIVE;
+  }
+
+  void setPriority(TaskPriority priority) {
+    this.priority = priority;
+  }
+
+  void setStatus(TaskStatus status) {
+    this.status = status;
   }
 }

@@ -81,6 +81,9 @@ The application demonstrates:
 - task entry through a text field, the Add Task button, or Enter;
 - a `ListView` with a checkbox and Remove button for every task;
 - immediate UI updates when tasks are added, completed, or removed;
+- in-app Foundation and Advanced path buttons that preserve the current task list;
+- optional Advanced priority editing, an Active/In Review/Completed workflow, combined filters,
+  progress statistics, and completed-task cleanup;
 - input validation and a testable task model separated from the controller.
 
 ## Run the Browser Test Lab

@@ -13,6 +13,15 @@ public final class TaskListModel {
 
   /** Validates, normalizes, and appends a task to the list. */
   public TaskItem addTask(String rawTitle) {
+    return addTask(rawTitle, TaskPriority.MEDIUM);
+  }
+
+  /** Adds a validated task with the priority selected in the advanced workflow. */
+  public TaskItem addTask(String rawTitle, TaskPriority priority) {
+    if (priority == null) {
+      throw new IllegalArgumentException("Choose a task priority.");
+    }
+
     String title = rawTitle == null ? "" : rawTitle.trim();
     if (title.isEmpty()) {
       throw new IllegalArgumentException("Enter a task before adding it.");
@@ -32,7 +41,7 @@ public final class TaskListModel {
       throw new IllegalArgumentException("That task is already on the list.");
     }
 
-    TaskItem task = new TaskItem(nextTaskId++, title);
+    TaskItem task = new TaskItem(nextTaskId++, title, priority);
     tasks.add(task);
     return task;
   }
@@ -55,8 +64,57 @@ public final class TaskListModel {
         .orElse(false);
   }
 
+  /** Updates the priority selected for an existing task. */
+  public boolean setPriority(long taskId, TaskPriority priority) {
+    if (priority == null) {
+      throw new IllegalArgumentException("Choose a task priority.");
+    }
+
+    return tasks.stream()
+        .filter(task -> task.id() == taskId)
+        .findFirst()
+        .map(
+            task -> {
+              task.setPriority(priority);
+              return true;
+            })
+        .orElse(false);
+  }
+
+  /** Moves a task through the advanced Active, In Review, and Completed workflow. */
+  public boolean setStatus(long taskId, TaskStatus status) {
+    if (status == null) {
+      throw new IllegalArgumentException("Choose a task status.");
+    }
+
+    return tasks.stream()
+        .filter(task -> task.id() == taskId)
+        .findFirst()
+        .map(
+            task -> {
+              task.setStatus(status);
+              return true;
+            })
+        .orElse(false);
+  }
+
+  public long activeCount() {
+    return tasks.stream().filter(task -> task.status() == TaskStatus.ACTIVE).count();
+  }
+
+  public long reviewCount() {
+    return tasks.stream().filter(task -> task.status() == TaskStatus.IN_REVIEW).count();
+  }
+
   public long completedCount() {
     return tasks.stream().filter(TaskItem::completed).count();
+  }
+
+  /** Removes every completed task and returns the number of removed items. */
+  public int clearCompleted() {
+    int previousSize = tasks.size();
+    tasks.removeIf(TaskItem::completed);
+    return previousSize - tasks.size();
   }
 
   /** Returns an immutable snapshot for presentation and tests. */
