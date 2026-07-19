@@ -225,6 +225,7 @@ public final class EventHandlingController {
     private boolean updatingStatus;
 
     private TaskCell() {
+      getStyleClass().add("task-list-cell");
       row.setAlignment(Pos.CENTER_LEFT);
       row.getStyleClass().add("task-row");
       taskTitle.getStyleClass().add("task-title");

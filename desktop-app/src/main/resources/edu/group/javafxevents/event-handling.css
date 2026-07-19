@@ -232,7 +232,7 @@
     -fx-padding: 0 2px;
 }
 
-.filter-priority-box .list-cell {
+.filter-priority-box > .list-cell {
     -fx-font-weight: 700;
     -fx-text-fill: #173f34;
 }
@@ -266,13 +266,13 @@
     -fx-background-color: transparent;
 }
 
-.task-list .list-cell {
+.task-list .task-list-cell {
     -fx-background-color: transparent;
     -fx-border-color: transparent transparent #eee8dc transparent;
     -fx-padding: 8px 10px;
 }
 
-.task-list .list-cell:empty {
+.task-list .task-list-cell:empty {
     -fx-border-color: transparent;
 }
 
@@ -302,7 +302,7 @@
     -fx-border-color: #2d715f;
 }
 
-.task-priority-box .list-cell {
+.task-priority-box > .list-cell {
     -fx-font-size: 10px;
     -fx-font-weight: 800;
 }
@@ -319,15 +319,15 @@
     -fx-background-color: #dce9e3;
 }
 
-.priority-high .list-cell {
+.priority-high > .list-cell {
     -fx-text-fill: #8a342b;
 }
 
-.priority-medium .list-cell {
+.priority-medium > .list-cell {
     -fx-text-fill: #765916;
 }
 
-.priority-low .list-cell {
+.priority-low > .list-cell {
     -fx-text-fill: #27604f;
 }
 
@@ -343,13 +343,17 @@
     -fx-border-color: #2d715f;
 }
 
-.task-status-box .list-cell {
+.task-status-box > .list-cell {
     -fx-font-size: 10px;
     -fx-font-weight: 800;
 }
 
 .status-active {
-    -fx-background-color: #dce9e3;
+    -fx-background-color: #1f6a55;
+}
+
+.status-active:focused {
+    -fx-border-color: #0f473a;
 }
 
 .status-review {
@@ -360,15 +364,19 @@
     -fx-background-color: #e3e6e4;
 }
 
-.status-active .list-cell {
-    -fx-text-fill: #27604f;
+.status-active > .list-cell {
+    -fx-text-fill: #fffdf8;
 }
 
-.status-review .list-cell {
+.status-active .arrow {
+    -fx-background-color: #fffdf8;
+}
+
+.status-review > .list-cell {
     -fx-text-fill: #64487a;
 }
 
-.status-completed .list-cell {
+.status-completed > .list-cell {
     -fx-text-fill: #59635e;
 }
 
