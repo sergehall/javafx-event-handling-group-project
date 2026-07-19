@@ -18,6 +18,14 @@ public final class TaskListModel {
 
   /** Adds a validated task with the priority selected in the advanced workflow. */
   public TaskItem addTask(String rawTitle, TaskPriority priority) {
+    String title = validateNewTask(rawTitle, priority);
+    TaskItem task = new TaskItem(nextTaskId++, title, priority);
+    tasks.add(task);
+    return task;
+  }
+
+  /** Validates a prospective task without mutating the current list. */
+  public String validateNewTask(String rawTitle, TaskPriority priority) {
     if (priority == null) {
       throw new IllegalArgumentException("Choose a task priority.");
     }
@@ -40,10 +48,41 @@ public final class TaskListModel {
     if (duplicate) {
       throw new IllegalArgumentException("That task is already on the list.");
     }
+    return title;
+  }
 
-    TaskItem task = new TaskItem(nextTaskId++, title, priority);
+  /** Replaces the current snapshot with tasks loaded from persistent storage. */
+  public void replaceTasks(List<TaskItem> persistedTasks) {
+    if (persistedTasks == null) {
+      throw new IllegalArgumentException("Persisted tasks are required.");
+    }
+    tasks.clear();
+    tasks.addAll(persistedTasks);
+    nextTaskId = tasks.stream().mapToLong(TaskItem::id).max().orElse(0) + 1;
+  }
+
+  /** Adds a task whose stable identifier was assigned by persistent storage. */
+  public void addPersistedTask(TaskItem task) {
+    if (task == null) {
+      throw new IllegalArgumentException("Persisted task is required.");
+    }
+    validateNewTask(task.title(), task.priority());
     tasks.add(task);
-    return task;
+    nextTaskId = Math.max(nextTaskId, task.id() + 1);
+  }
+
+  /** Replaces one task with the latest representation returned by persistent storage. */
+  public boolean replaceTask(TaskItem replacement) {
+    if (replacement == null) {
+      throw new IllegalArgumentException("Updated task is required.");
+    }
+    for (int index = 0; index < tasks.size(); index++) {
+      if (tasks.get(index).id() == replacement.id()) {
+        tasks.set(index, replacement);
+        return true;
+      }
+    }
+    return false;
   }
 
   /** Removes the task with the supplied stable identifier. */

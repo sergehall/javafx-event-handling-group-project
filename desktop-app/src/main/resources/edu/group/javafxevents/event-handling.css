@@ -25,6 +25,71 @@
     -fx-text-fill: #69736e;
 }
 
+.storage-status-badge {
+    -fx-background-radius: 9px;
+    -fx-border-radius: 9px;
+    -fx-border-width: 1px;
+    -fx-min-width: 120px;
+    -fx-padding: 5px 9px;
+}
+
+.storage-status-dot {
+    -fx-background-radius: 50%;
+    -fx-max-height: 8px;
+    -fx-max-width: 8px;
+}
+
+.storage-status-title {
+    -fx-font-size: 10px;
+    -fx-font-weight: 800;
+}
+
+.storage-status-detail {
+    -fx-font-size: 9px;
+}
+
+.storage-connecting {
+    -fx-background-color: #f8ebc7;
+    -fx-border-color: #c79a38;
+}
+
+.storage-connecting .storage-status-dot {
+    -fx-background-color: #b57d16;
+}
+
+.storage-connecting .storage-status-title,
+.storage-connecting .storage-status-detail {
+    -fx-text-fill: #795614;
+}
+
+.storage-online {
+    -fx-background-color: #dce9e3;
+    -fx-border-color: #2d715f;
+}
+
+.storage-online .storage-status-dot {
+    -fx-background-color: #147a5b;
+}
+
+.storage-online .storage-status-title,
+.storage-online .storage-status-detail {
+    -fx-text-fill: #173f34;
+}
+
+.storage-offline {
+    -fx-background-color: #fae8e4;
+    -fx-border-color: #b45a55;
+}
+
+.storage-offline .storage-status-dot {
+    -fx-background-color: #a43f3f;
+}
+
+.storage-offline .storage-status-title,
+.storage-offline .storage-status-detail {
+    -fx-text-fill: #7a3030;
+}
+
 .mode-button {
     -fx-background-color: transparent;
     -fx-background-radius: 9px;

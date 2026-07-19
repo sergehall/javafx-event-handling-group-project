@@ -1,6 +1,11 @@
 package edu.group.javafxevents;
 
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.css.PseudoClass;
@@ -27,17 +32,23 @@ import javafx.scene.text.Text;
 public final class EventHandlingController {
   private final TaskListModel model = new TaskListModel();
   private final ObservableList<TaskItem> visibleTasks = FXCollections.observableArrayList();
+  private final TaskGateway taskGateway;
 
   private ViewMode viewMode = ViewMode.FOUNDATION;
   private TaskFilter taskFilter = TaskFilter.ALL;
   private PriorityFilter priorityFilter = PriorityFilter.ALL;
+  private StorageMode storageMode = StorageMode.CONNECTING;
 
   @FXML private ToggleButton foundationModeButton;
   @FXML private ToggleButton advancedModeButton;
+  @FXML private HBox storageStatusBadge;
+  @FXML private Label storageStatusLabel;
+  @FXML private Label storageStatusDetailLabel;
   @FXML private Label eyebrowLabel;
   @FXML private Label titleLabel;
   @FXML private Label subtitleLabel;
   @FXML private TextField taskField;
+  @FXML private Button addTaskButton;
   @FXML private ComboBox<TaskPriority> priorityBox;
   @FXML private HBox priorityField;
   @FXML private ListView<TaskItem> taskListView;
@@ -57,6 +68,14 @@ public final class EventHandlingController {
   @FXML private Label completedCountLabel;
   @FXML private Label statusLabel;
   @FXML private Label summaryLabel;
+
+  public EventHandlingController() {
+    this(new HttpTaskGateway());
+  }
+
+  EventHandlingController(TaskGateway taskGateway) {
+    this.taskGateway = Objects.requireNonNull(taskGateway);
+  }
 
   /** Configures task rows, path controls, and advanced options after FXML injection. */
   @FXML
@@ -84,6 +103,10 @@ public final class EventHandlingController {
     taskListView.setItems(visibleTasks);
     taskListView.setCellFactory(ignored -> new TaskCell());
     applyMode(ViewMode.FOUNDATION);
+    setTaskComposerDisabled(true);
+    updateStorageIndicator(StorageHealth.CONNECTING, "Task API");
+    statusLabel.setText("Connecting to task storage...");
+    loadPersistedTasks();
   }
 
   @FXML
@@ -102,10 +125,34 @@ public final class EventHandlingController {
     try {
       TaskPriority priority =
           viewMode == ViewMode.ADVANCED ? priorityBox.getValue() : TaskPriority.MEDIUM;
-      TaskItem addedTask = model.addTask(taskField.getText(), priority);
-      taskField.clear();
-      statusLabel.setText("Added: " + addedTask.title());
-      refreshView();
+      String title = model.validateNewTask(taskField.getText(), priority);
+      if (storageMode == StorageMode.MEMORY) {
+        TaskItem addedTask = model.addTask(title, priority);
+        taskField.clear();
+        statusLabel.setText("Added in memory: " + addedTask.title());
+        refreshView();
+      } else if (storageMode == StorageMode.DATABASE) {
+        setTaskComposerDisabled(true);
+        statusLabel.setText("Saving task to PostgreSQL...");
+        completeOnFxThread(
+            taskGateway.create(title, priority),
+            addedTask -> {
+              model.addPersistedTask(addedTask);
+              if (taskField.getText().trim().equals(title)) {
+                taskField.clear();
+              }
+              setTaskComposerDisabled(false);
+              updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+              statusLabel.setText("Saved to PostgreSQL: " + addedTask.title());
+              refreshView();
+              taskField.requestFocus();
+            },
+            failure -> {
+              setTaskComposerDisabled(false);
+              showPersistenceFailure("Task was not saved", failure);
+              taskField.requestFocus();
+            });
+      }
     } catch (IllegalArgumentException exception) {
       statusLabel.setText(exception.getMessage());
     }
@@ -142,11 +189,110 @@ public final class EventHandlingController {
 
   @FXML
   private void handleClearCompleted(ActionEvent event) {
-    int removedCount = model.clearCompleted();
-    statusLabel.setText(
-        removedCount == 1 ? "Cleared 1 completed task." : "Cleared " + removedCount + " tasks.");
-    refreshView();
+    if (storageMode == StorageMode.MEMORY) {
+      int removedCount = model.clearCompleted();
+      showClearedMessage(removedCount, "in memory");
+      refreshView();
+    } else if (storageMode == StorageMode.DATABASE) {
+      clearCompletedButton.setDisable(true);
+      statusLabel.setText("Removing completed tasks from PostgreSQL...");
+      completeOnFxThread(
+          taskGateway.clearCompleted(),
+          removedCount -> {
+            model.clearCompleted();
+            updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+            showClearedMessage(removedCount, "from PostgreSQL");
+            refreshView();
+          },
+          failure -> {
+            refreshView();
+            showPersistenceFailure("Completed tasks were not removed", failure);
+          });
+    }
     event.consume();
+  }
+
+  private void loadPersistedTasks() {
+    completeOnFxThread(
+        taskGateway.findAll(),
+        persistedTasks -> {
+          model.replaceTasks(persistedTasks);
+          storageMode = StorageMode.DATABASE;
+          setTaskComposerDisabled(false);
+          updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+          statusLabel.setText(
+              persistedTasks.isEmpty()
+                  ? "PostgreSQL connected. Add your first task."
+                  : "PostgreSQL connected · Loaded " + persistedTasks.size() + " tasks.");
+          refreshView();
+          taskField.requestFocus();
+        },
+        failure -> {
+          storageMode = StorageMode.MEMORY;
+          setTaskComposerDisabled(false);
+          updateStorageIndicator(StorageHealth.OFFLINE, "Memory mode");
+          statusLabel.setText(
+              "API unavailable · Using memory for this session. Start group-api to persist tasks.");
+          refreshView();
+          taskField.requestFocus();
+        });
+  }
+
+  private void setTaskComposerDisabled(boolean disabled) {
+    taskField.setDisable(disabled);
+    priorityBox.setDisable(disabled);
+    addTaskButton.setDisable(disabled);
+  }
+
+  private <T> void completeOnFxThread(
+      CompletableFuture<T> future, Consumer<T> onSuccess, Consumer<Throwable> onFailure) {
+    future.whenComplete(
+        (result, failure) ->
+            Platform.runLater(
+                () -> {
+                  if (failure == null) {
+                    onSuccess.accept(result);
+                  } else {
+                    onFailure.accept(unwrap(failure));
+                  }
+                }));
+  }
+
+  private Throwable unwrap(Throwable failure) {
+    Throwable current = failure;
+    while ((current instanceof CompletionException) && current.getCause() != null) {
+      current = current.getCause();
+    }
+    return current;
+  }
+
+  private void showPersistenceFailure(String action, Throwable failure) {
+    if (failure instanceof TaskApiException apiFailure) {
+      updateStorageIndicator(
+          apiFailure.isConnectivityFailure() ? StorageHealth.OFFLINE : StorageHealth.ONLINE,
+          apiFailure.isConnectivityFailure() ? "Changes not saved" : "PostgreSQL");
+    }
+    String detail =
+        failure instanceof TaskApiException && failure.getMessage() != null
+            ? failure.getMessage()
+            : "Unexpected task API error.";
+    statusLabel.setText(action + ": " + detail);
+  }
+
+  private void updateStorageIndicator(StorageHealth health, String detail) {
+    storageStatusBadge
+        .getStyleClass()
+        .removeAll("storage-connecting", "storage-online", "storage-offline");
+    storageStatusBadge.getStyleClass().add(health.styleClass());
+    storageStatusLabel.setText(health.displayName());
+    storageStatusDetailLabel.setText(detail);
+    storageStatusBadge.setAccessibleText(health.displayName() + ". " + detail + ".");
+  }
+
+  private void showClearedMessage(int removedCount, String storageDescription) {
+    String taskWord = removedCount == 1 ? "task" : "tasks";
+    statusLabel.setText(
+        "Cleared " + removedCount + " completed " + taskWord + " " + storageDescription + ".");
   }
 
   private void applyMode(ViewMode nextMode) {
@@ -200,10 +346,6 @@ public final class EventHandlingController {
     progressBar.setProgress(progress);
     progressLabel.setText(Math.round(progress * 100) + "% complete");
     clearCompletedButton.setDisable(completed == 0);
-
-    if (total == 0) {
-      statusLabel.setText("Add your first task to begin.");
-    }
   }
 
   /** Renders each task with the controls required by both paths. */
@@ -249,8 +391,28 @@ public final class EventHandlingController {
     private void handleCompletionChange(ActionEvent event) {
       TaskItem task = getItem();
       if (task != null) {
-        model.setCompleted(task.id(), completedCheckBox.isSelected());
-        refreshView();
+        TaskStatus nextStatus =
+            completedCheckBox.isSelected() ? TaskStatus.COMPLETED : TaskStatus.ACTIVE;
+        if (storageMode == StorageMode.MEMORY) {
+          model.setStatus(task.id(), nextStatus);
+          statusLabel.setText("Status changed in memory: " + task.title());
+          refreshView();
+        } else if (storageMode == StorageMode.DATABASE) {
+          row.setDisable(true);
+          completeOnFxThread(
+              taskGateway.updateStatus(task.id(), nextStatus),
+              updatedTask -> {
+                model.replaceTask(updatedTask);
+                updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+                statusLabel.setText("Status saved to PostgreSQL: " + task.title());
+                refreshView();
+              },
+              failure -> {
+                row.setDisable(false);
+                refreshView();
+                showPersistenceFailure("Status was not saved", failure);
+              });
+        }
       }
       event.consume();
     }
@@ -258,13 +420,31 @@ public final class EventHandlingController {
     private void handleStatusChange(ActionEvent event) {
       TaskItem task = getItem();
       TaskStatus selectedStatus = taskStatusBox.getValue();
-      if (!updatingStatus
-          && task != null
-          && selectedStatus != null
-          && model.setStatus(task.id(), selectedStatus)) {
-        statusLabel.setText(
-            "Status changed: " + task.title() + " · " + selectedStatus.displayName());
-        refreshView();
+      if (!updatingStatus && task != null && selectedStatus != null) {
+        if (storageMode == StorageMode.MEMORY && model.setStatus(task.id(), selectedStatus)) {
+          statusLabel.setText(
+              "Status changed in memory: " + task.title() + " · " + selectedStatus.displayName());
+          refreshView();
+        } else if (storageMode == StorageMode.DATABASE) {
+          row.setDisable(true);
+          completeOnFxThread(
+              taskGateway.updateStatus(task.id(), selectedStatus),
+              updatedTask -> {
+                model.replaceTask(updatedTask);
+                updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+                statusLabel.setText(
+                    "Status saved to PostgreSQL: "
+                        + task.title()
+                        + " · "
+                        + selectedStatus.displayName());
+                refreshView();
+              },
+              failure -> {
+                row.setDisable(false);
+                refreshView();
+                showPersistenceFailure("Status was not saved", failure);
+              });
+        }
       }
       event.consume();
     }
@@ -272,22 +452,59 @@ public final class EventHandlingController {
     private void handlePriorityChange(ActionEvent event) {
       TaskItem task = getItem();
       TaskPriority selectedPriority = taskPriorityBox.getValue();
-      if (!updatingPriority
-          && task != null
-          && selectedPriority != null
-          && model.setPriority(task.id(), selectedPriority)) {
-        statusLabel.setText(
-            "Priority changed: " + task.title() + " · " + selectedPriority.displayName());
-        refreshView();
+      if (!updatingPriority && task != null && selectedPriority != null) {
+        if (storageMode == StorageMode.MEMORY && model.setPriority(task.id(), selectedPriority)) {
+          statusLabel.setText(
+              "Priority changed in memory: "
+                  + task.title()
+                  + " · "
+                  + selectedPriority.displayName());
+          refreshView();
+        } else if (storageMode == StorageMode.DATABASE) {
+          row.setDisable(true);
+          completeOnFxThread(
+              taskGateway.updatePriority(task.id(), selectedPriority),
+              updatedTask -> {
+                model.replaceTask(updatedTask);
+                updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+                statusLabel.setText(
+                    "Priority saved to PostgreSQL: "
+                        + task.title()
+                        + " · "
+                        + selectedPriority.displayName());
+                refreshView();
+              },
+              failure -> {
+                row.setDisable(false);
+                refreshView();
+                showPersistenceFailure("Priority was not saved", failure);
+              });
+        }
       }
       event.consume();
     }
 
     private void handleRemove(ActionEvent event) {
       TaskItem task = getItem();
-      if (task != null && model.removeTask(task.id())) {
-        statusLabel.setText("Removed: " + task.title());
-        refreshView();
+      if (task != null) {
+        if (storageMode == StorageMode.MEMORY && model.removeTask(task.id())) {
+          statusLabel.setText("Removed in memory: " + task.title());
+          refreshView();
+        } else if (storageMode == StorageMode.DATABASE) {
+          row.setDisable(true);
+          completeOnFxThread(
+              taskGateway.delete(task.id()),
+              ignored -> {
+                model.removeTask(task.id());
+                updateStorageIndicator(StorageHealth.ONLINE, "PostgreSQL");
+                statusLabel.setText("Removed from PostgreSQL: " + task.title());
+                refreshView();
+              },
+              failure -> {
+                row.setDisable(false);
+                showPersistenceFailure("Task was not removed", failure);
+              });
+        }
       }
       event.consume();
     }
@@ -303,6 +520,12 @@ public final class EventHandlingController {
       }
 
       taskTitle.setText(task.title());
+      boolean connecting = storageMode == StorageMode.CONNECTING;
+      row.setDisable(connecting);
+      completedCheckBox.setDisable(connecting);
+      taskPriorityBox.setDisable(connecting);
+      taskStatusBox.setDisable(connecting);
+      removeButton.setDisable(connecting);
       completedCheckBox.setSelected(task.completed());
       completedCheckBox.setAccessibleText("Mark " + task.title() + " as completed");
       removeButton.setAccessibleText("Remove " + task.title());
@@ -369,6 +592,34 @@ public final class EventHandlingController {
   private enum ViewMode {
     FOUNDATION,
     ADVANCED
+  }
+
+  private enum StorageMode {
+    CONNECTING,
+    DATABASE,
+    MEMORY
+  }
+
+  private enum StorageHealth {
+    CONNECTING("Connecting", "storage-connecting"),
+    ONLINE("Database online", "storage-online"),
+    OFFLINE("Database offline", "storage-offline");
+
+    private final String displayName;
+    private final String styleClass;
+
+    StorageHealth(String displayName, String styleClass) {
+      this.displayName = displayName;
+      this.styleClass = styleClass;
+    }
+
+    private String displayName() {
+      return displayName;
+    }
+
+    private String styleClass() {
+      return styleClass;
+    }
   }
 
   private enum TaskFilter {

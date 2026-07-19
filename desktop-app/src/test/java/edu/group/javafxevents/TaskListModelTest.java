@@ -106,4 +106,31 @@ class TaskListModelTest {
     assertEquals(active, model.tasks().getFirst());
     assertEquals(0, model.clearCompleted());
   }
+
+  @Test
+  void restoresPersistentTasksAndKeepsDatabaseIdentifiers() {
+    TaskItem persisted =
+        new TaskItem(42, "Persisted task", TaskPriority.HIGH, TaskStatus.IN_REVIEW);
+
+    model.replaceTasks(java.util.List.of(persisted));
+
+    assertEquals(42, model.tasks().getFirst().id());
+    assertEquals(TaskStatus.IN_REVIEW, model.tasks().getFirst().status());
+    assertEquals(43, model.addTask("Next local fallback task").id());
+  }
+
+  @Test
+  void replacesTaskWithLatestApiRepresentation() {
+    model.replaceTasks(
+        java.util.List.of(new TaskItem(9, "API task", TaskPriority.MEDIUM, TaskStatus.ACTIVE)));
+
+    assertTrue(
+        model.replaceTask(new TaskItem(9, "API task", TaskPriority.LOW, TaskStatus.COMPLETED)));
+
+    TaskItem updated = model.tasks().getFirst();
+    assertEquals(TaskPriority.LOW, updated.priority());
+    assertEquals(TaskStatus.COMPLETED, updated.status());
+    assertFalse(
+        model.replaceTask(new TaskItem(999, "Missing", TaskPriority.MEDIUM, TaskStatus.ACTIVE)));
+  }
 }

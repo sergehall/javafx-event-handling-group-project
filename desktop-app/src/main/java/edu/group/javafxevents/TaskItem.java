@@ -8,9 +8,14 @@ public final class TaskItem {
   private TaskStatus status = TaskStatus.ACTIVE;
 
   TaskItem(long id, String title, TaskPriority priority) {
+    this(id, title, priority, TaskStatus.ACTIVE);
+  }
+
+  TaskItem(long id, String title, TaskPriority priority, TaskStatus status) {
     this.id = id;
     this.title = title;
     this.priority = priority;
+    this.status = status;
   }
 
   public long id() {

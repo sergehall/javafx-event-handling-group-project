@@ -28,12 +28,16 @@ class FxmlContractTest {
           "fx:id=\"summaryLabel\"",
           "fx:id=\"foundationModeButton\"",
           "fx:id=\"advancedModeButton\"",
+          "fx:id=\"storageStatusBadge\"",
+          "fx:id=\"storageStatusLabel\"",
+          "fx:id=\"storageStatusDetailLabel\"",
           "fx:id=\"priorityBox\"",
           "fx:id=\"progressBar\"",
           "fx:id=\"reviewCountLabel\"",
           "fx:id=\"reviewFilterButton\"",
           "fx:id=\"priorityFilterBox\"",
           "styleClass=\"filter-priority-box\"",
+          "styleClass=\"storage-status-badge,storage-connecting\"",
           "styleClass=\"progress-label\"",
           "#handleAddTask",
           "#showFoundation",
@@ -65,6 +69,10 @@ class FxmlContractTest {
     assertTrue(stylesheet.contains(".task-status-box {"));
     assertTrue(stylesheet.contains("-fx-background-color: #1f6a55;"));
     assertTrue(stylesheet.contains(".status-review {"));
+    assertTrue(stylesheet.contains(".storage-online {"));
+    assertTrue(stylesheet.contains(".storage-offline {"));
+    assertTrue(stylesheet.contains("-fx-background-color: #147a5b;"));
+    assertTrue(stylesheet.contains("-fx-background-color: #a43f3f;"));
     assertFalse(stylesheet.contains("\n.list-cell {"));
     assertFalse(stylesheet.contains(".task-list .list-cell {"));
 

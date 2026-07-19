@@ -29,6 +29,25 @@
                     <Label styleClass="path-copy" text="Switch workflows without losing your tasks." />
                 </VBox>
                 <Region HBox.hgrow="ALWAYS" />
+                <HBox fx:id="storageStatusBadge"
+                      accessibleText="Connecting to task storage"
+                      alignment="CENTER_LEFT"
+                      spacing="7.0"
+                      styleClass="storage-status-badge,storage-connecting">
+                    <Region minHeight="8.0"
+                            minWidth="8.0"
+                            prefHeight="8.0"
+                            prefWidth="8.0"
+                            styleClass="storage-status-dot" />
+                    <VBox spacing="0.0">
+                        <Label fx:id="storageStatusLabel"
+                               styleClass="storage-status-title"
+                               text="Connecting" />
+                        <Label fx:id="storageStatusDetailLabel"
+                               styleClass="storage-status-detail"
+                               text="Task API" />
+                    </VBox>
+                </HBox>
                 <ToggleButton fx:id="foundationModeButton"
                               accessibleText="Foundation required task workflow"
                               onAction="#showFoundation"
