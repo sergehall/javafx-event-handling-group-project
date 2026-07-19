@@ -242,18 +242,30 @@ main {
   list-style: none;
 }
 
-.lab-mode-navigation a {
+.lab-mode-navigation .lab-mode-navigation__options--with-launcher {
+  min-width: min(100%, 710px);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lab-mode-navigation a,
+.desktop-launcher-button {
   display: grid;
+  width: 100%;
   min-height: 46px;
   padding: 5px 12px;
   gap: 2px;
   align-content: center;
+  border: 0;
   border-radius: 10px;
   color: var(--ink-muted);
+  background: transparent;
+  font: inherit;
+  text-align: left;
   text-decoration: none;
 }
 
-.lab-mode-navigation a:hover {
+.lab-mode-navigation a:hover,
+.desktop-launcher-button:hover:not(:disabled) {
   color: var(--forest);
   background: var(--surface-muted);
 }
@@ -264,7 +276,8 @@ main {
   box-shadow: 0 8px 20px rgb(23 63 52 / 20%);
 }
 
-.lab-mode-navigation a > span {
+.lab-mode-navigation a > span,
+.desktop-launcher-button > span {
   font-size: 0.84rem;
   font-weight: 850;
 }
@@ -273,6 +286,29 @@ main {
   color: inherit;
   font-size: 0.66rem;
   opacity: 0.76;
+}
+
+.desktop-launcher-button {
+  border: 1px solid rgb(40 117 95 / 28%);
+  color: var(--forest);
+  background: #e7f0ec;
+  cursor: pointer;
+}
+
+.desktop-launcher-button[data-state="starting"] {
+  cursor: wait;
+  opacity: 0.68;
+}
+
+.desktop-launcher-button[data-state="started"] {
+  color: #fffdf8;
+  background: var(--forest-light);
+}
+
+.desktop-launcher-button[data-state="error"] {
+  border-color: rgb(133 53 53 / 28%);
+  color: #853535;
+  background: #fae8e4;
 }
 
 .foundation-lab-shell {
