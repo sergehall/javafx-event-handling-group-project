@@ -192,6 +192,14 @@ The command opens `http://127.0.0.1:3000` automatically.
 the site's offline behavior, but task changes remain disabled until the API and
 database are available.
 
+In local development, the `Choose your path` panel also includes an
+`Open JavaFX` button. It sends a protected same-origin POST request to
+`/api/local/desktop/start`; the Next.js server then launches the fixed command
+`./mvnw -pl desktop-app javafx:run`. The endpoint accepts no command or
+arguments from the browser, works only through a loopback origin, and is
+disabled in production builds. It also detects an existing JavaFX process and
+returns `JavaFX is already running` instead of opening a duplicate window.
+
 | Route           | Purpose                                                                           |
 | --------------- | --------------------------------------------------------------------------------- |
 | `/`             | Project home page and assignment overview                                         |
