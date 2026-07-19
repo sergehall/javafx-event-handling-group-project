@@ -6,51 +6,71 @@ import { useMemo, useRef, useState } from "react";
 const MAX_TASK_LENGTH = 80;
 
 type Priority = "high" | "medium" | "low";
-type TaskFilter = "all" | "active" | "completed";
+type TaskStatus = "active" | "review" | "completed";
+type StatusFilter = "all" | TaskStatus;
+type PriorityFilter = "all" | Priority;
 
 type Task = Readonly<{
   id: number;
   title: string;
   priority: Priority;
-  completed: boolean;
+  status: TaskStatus;
 }>;
 
 const INITIAL_TASKS: readonly Task[] = [
-  { id: 1, title: "Design the JavaFX task layout", priority: "high", completed: true },
-  { id: 2, title: "Connect add and remove handlers", priority: "medium", completed: false },
-  { id: 3, title: "Record the final walkthrough", priority: "low", completed: false },
+  { id: 1, title: "Design the JavaFX task layout", priority: "high", status: "completed" },
+  { id: 2, title: "Connect add and remove handlers", priority: "medium", status: "active" },
+  { id: 3, title: "Record the final walkthrough", priority: "low", status: "review" },
 ];
 
-const FILTERS = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-] as const satisfies readonly { value: TaskFilter; label: string }[];
+const PRIORITIES = [
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+] as const satisfies readonly { value: Priority; label: string }[];
 
-function matchesFilter(task: Task, filter: TaskFilter): boolean {
-  if (filter === "active") {
-    return !task.completed;
-  }
-  if (filter === "completed") {
-    return task.completed;
-  }
-  return true;
+const STATUSES = [
+  { value: "active", label: "Active" },
+  { value: "review", label: "In Review" },
+  { value: "completed", label: "Completed" },
+] as const satisfies readonly { value: TaskStatus; label: string }[];
+
+const STATUS_FILTERS = [{ value: "all", label: "All" }, ...STATUSES] as const satisfies readonly {
+  value: StatusFilter;
+  label: string;
+}[];
+
+const PRIORITY_FILTERS = [
+  { value: "all", label: "All" },
+  ...PRIORITIES,
+] as const satisfies readonly { value: PriorityFilter; label: string }[];
+
+function matchesFilters(
+  task: Task,
+  statusFilter: StatusFilter,
+  priorityFilter: PriorityFilter,
+): boolean {
+  const matchesStatus = statusFilter === "all" || task.status === statusFilter;
+  const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+  return matchesStatus && matchesPriority;
 }
 
 export function AdvancedTaskLab() {
   const [tasks, setTasks] = useState<readonly Task[]>(INITIAL_TASKS);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
-  const [filter, setFilter] = useState<TaskFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [priorityFilter, setPriorityFilter] = useState<PriorityFilter>("all");
   const [error, setError] = useState("");
   const nextTaskId = useRef(4);
 
-  const completedCount = tasks.filter((task) => task.completed).length;
-  const activeCount = tasks.length - completedCount;
+  const activeCount = tasks.filter((task) => task.status === "active").length;
+  const reviewCount = tasks.filter((task) => task.status === "review").length;
+  const completedCount = tasks.filter((task) => task.status === "completed").length;
   const progress = tasks.length === 0 ? 0 : Math.round((completedCount / tasks.length) * 100);
   const visibleTasks = useMemo(
-    () => tasks.filter((task) => matchesFilter(task, filter)),
-    [filter, tasks],
+    () => tasks.filter((task) => matchesFilters(task, statusFilter, priorityFilter)),
+    [priorityFilter, statusFilter, tasks],
   );
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -76,7 +96,7 @@ export function AdvancedTaskLab() {
         id: nextTaskId.current,
         title: nextTitle,
         priority,
-        completed: false,
+        status: "active",
       },
     ]);
     nextTaskId.current += 1;
@@ -84,11 +104,15 @@ export function AdvancedTaskLab() {
     setError("");
   }
 
-  function toggleTask(taskId: number) {
+  function updateTaskPriority(taskId: number, nextPriority: Priority) {
     setTasks((currentTasks) =>
-      currentTasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task,
-      ),
+      currentTasks.map((task) => (task.id === taskId ? { ...task, priority: nextPriority } : task)),
+    );
+  }
+
+  function updateTaskStatus(taskId: number, nextStatus: TaskStatus) {
+    setTasks((currentTasks) =>
+      currentTasks.map((task) => (task.id === taskId ? { ...task, status: nextStatus } : task)),
     );
   }
 
@@ -97,7 +121,7 @@ export function AdvancedTaskLab() {
   }
 
   function clearCompleted() {
-    setTasks((currentTasks) => currentTasks.filter((task) => !task.completed));
+    setTasks((currentTasks) => currentTasks.filter((task) => task.status !== "completed"));
   }
 
   return (
@@ -105,9 +129,10 @@ export function AdvancedTaskLab() {
       <header className="advanced-lab__header">
         <div>
           <p className="section-heading__label">Task command center</p>
-          <h2 id="advanced-workspace-title">Plan, prioritize, complete.</h2>
+          <h2 id="advanced-workspace-title">Plan, prioritize, review, deliver.</h2>
           <p>
-            Explore a richer event-handling flow built around the JavaFX assignment requirements.
+            Use the same professional task workflow as the JavaFX application, with synchronized
+            status, priority, filters, and delivery progress.
           </p>
         </div>
         <div className="advanced-lab__completion" aria-label={`${progress}% complete`}>
@@ -122,8 +147,12 @@ export function AdvancedTaskLab() {
           <strong>{tasks.length}</strong>
         </div>
         <div>
-          <span>In progress</span>
+          <span>Active</span>
           <strong>{activeCount}</strong>
+        </div>
+        <div>
+          <span>In review</span>
+          <strong>{reviewCount}</strong>
         </div>
         <div>
           <span>Completed</span>
@@ -157,15 +186,17 @@ export function AdvancedTaskLab() {
           />
         </div>
         <div className="advanced-task-form__field advanced-task-form__priority">
-          <label htmlFor="advanced-task-priority">Priority</label>
+          <label htmlFor="advanced-task-priority">Task priority</label>
           <select
             id="advanced-task-priority"
             value={priority}
             onChange={(event) => setPriority(event.target.value as Priority)}
           >
-            <option value="high">High</option>
-            <option value="medium">Medium</option>
-            <option value="low">Low</option>
+            {PRIORITIES.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
           </select>
         </div>
         <button type="submit">Add task</button>
@@ -178,17 +209,35 @@ export function AdvancedTaskLab() {
       </form>
 
       <div className="advanced-toolbar">
-        <div className="advanced-filters" aria-label="Filter tasks">
-          {FILTERS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              aria-pressed={filter === option.value}
-              onClick={() => setFilter(option.value)}
-            >
-              {option.label}
-            </button>
-          ))}
+        <div className="advanced-toolbar__controls">
+          <span className="advanced-filter-label">Show</span>
+          <div className="advanced-status-filters" role="group" aria-label="Filter by status">
+            {STATUS_FILTERS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                aria-pressed={statusFilter === option.value}
+                onClick={() => setStatusFilter(option.value)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <label className="advanced-filter-label" htmlFor="advanced-priority-filter">
+            Priority
+          </label>
+          <select
+            id="advanced-priority-filter"
+            className="advanced-priority-filter"
+            value={priorityFilter}
+            onChange={(event) => setPriorityFilter(event.target.value as PriorityFilter)}
+          >
+            {PRIORITY_FILTERS.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
         <button
           type="button"
@@ -208,20 +257,35 @@ export function AdvancedTaskLab() {
       ) : (
         <ul className="advanced-task-list" aria-label="Tasks">
           {visibleTasks.map((task) => (
-            <li key={task.id} className={task.completed ? "advanced-task--completed" : undefined}>
-              <input
-                id={`advanced-task-${task.id}`}
-                type="checkbox"
-                checked={task.completed}
-                onChange={() => toggleTask(task.id)}
-                aria-label={`Mark "${task.title}" as ${task.completed ? "active" : "completed"}`}
-              />
-              <label htmlFor={`advanced-task-${task.id}`}>
-                <strong>{task.title}</strong>
-                <span className={`priority-badge priority-badge--${task.priority}`}>
-                  {task.priority} priority
-                </span>
-              </label>
+            <li
+              key={task.id}
+              className={task.status === "completed" ? "advanced-task--completed" : undefined}
+            >
+              <select
+                className={`task-priority-control task-priority-control--${task.priority}`}
+                value={task.priority}
+                onChange={(event) => updateTaskPriority(task.id, event.target.value as Priority)}
+                aria-label={`Priority for "${task.title}"`}
+              >
+                {PRIORITIES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <select
+                className={`task-status-control task-status-control--${task.status}`}
+                value={task.status}
+                onChange={(event) => updateTaskStatus(task.id, event.target.value as TaskStatus)}
+                aria-label={`Status for "${task.title}"`}
+              >
+                {STATUSES.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <strong className="advanced-task__title">{task.title}</strong>
               <button
                 type="button"
                 className="advanced-task__remove"

@@ -15,8 +15,8 @@ export default function AdvancedLabPage() {
         <div className="hero__eyebrow">Advanced path · Task workflow</div>
         <h1>Advanced Task Web Lab</h1>
         <p>
-          Go beyond the foundation demo with a complete task workflow: priorities, filters, progress
-          tracking, completion controls, and resilient input validation.
+          Match the JavaFX reference workflow with editable priorities, Active, In Review, and
+          Completed states, combined filters, delivery progress, and resilient input validation.
         </p>
       </header>
       <AdvancedTaskLab />

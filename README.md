@@ -110,8 +110,9 @@ npm run start:frontend
 ```
 
 Open `http://127.0.0.1:3000`. The Foundation route at `/lab` mirrors the required
-To-Do List workflow, while `/lab/advanced` adds priorities, filters, and progress
-tracking. The optional same-origin Next.js Route Handlers remain available for
+To-Do List workflow, while `/lab/advanced` mirrors the JavaFX reference with editable
+priorities, an Active/In Review/Completed workflow, combined filters, and progress tracking.
+The optional same-origin Next.js Route Handlers remain available for
 typed API testing and forward only validated requests to the local Spring Boot API.
 
 The default API address is `http://127.0.0.1:8081`. To change it locally, copy
